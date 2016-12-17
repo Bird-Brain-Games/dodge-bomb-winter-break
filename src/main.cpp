@@ -1,3 +1,5 @@
+#pragma once
+
 // (C) Bird Brain Games 2017
 // main.cpp 
 
@@ -19,6 +21,7 @@
 #include "InputManager.h"
 #include "GameObject.h"
 #include "Shader.h"
+#include "controller.h"
 
 // create game object
 std::vector<GameObject*> objects;
