@@ -13,4 +13,5 @@ syntax: glob
 *.log
 */debug
 */release
-*/build/
+build/
+Graphics.VC.db
