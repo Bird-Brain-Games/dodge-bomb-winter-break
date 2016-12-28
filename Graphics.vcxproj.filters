@@ -8,7 +8,6 @@
     <ClCompile Include="src\loadObject.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\GameObject.cpp" />
-    <ClCompile Include="src\controller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Shader.h">
@@ -18,7 +17,6 @@
     <ClInclude Include="src\InputManager.h" />
     <ClInclude Include="src\loadObject.h" />
     <ClInclude Include="src\KeyframeController.h" />
-    <ClInclude Include="src\controller.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
@@ -30,6 +28,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\blinnphong_v.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\passThru_f.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\passThru_v.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
