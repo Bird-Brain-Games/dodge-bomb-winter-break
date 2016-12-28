@@ -21,7 +21,6 @@
 #include "InputManager.h"
 #include "GameObject.h"
 #include "Shader.h"
-#include "controller.h"
 
 // create game object
 std::vector<GameObject*> objects;
@@ -38,8 +37,8 @@ glm::mat4x4 modelViewMatrix;
 #define FRAMES_PER_SECOND 60
 const int FRAME_DELAY = 1000 / FRAMES_PER_SECOND; // Miliseconds per frame
 
-int windowWidth = 600;
-int windowHeight = 600;
+int windowWidth = 1024;
+int windowHeight = 768;
 
 int mousepositionX;
 int mousepositionY;
@@ -60,6 +59,11 @@ void drawObjects()
 	{
 		objects[i]->draw(shader);
 	}
+}
+
+void initObjects()
+{
+	//GameObject *floor = new GameObject()
 }
 
 /* function DisplayCallbackFunction(void)
@@ -270,7 +274,7 @@ int main(int argc, char **argv)
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	/* Initialize Shader */
-	shader = new Shader("shaders//blinnphong_v.glsl", "shaders//blinnphong_f.glsl");
+	shader = new Shader("shaders//passthru_v.glsl", "shaders//passthru_f.glsl");
 	shader->bind();
 	glEnableVertexAttribArray(4);	glBindAttribLocation(shader->getID(), 4, "vPos");
 	glEnableVertexAttribArray(5);	glBindAttribLocation(shader->getID(), 5, "texture");
