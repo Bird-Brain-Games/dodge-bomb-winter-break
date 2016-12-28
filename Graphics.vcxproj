@@ -52,7 +52,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include\;C:\Hg\winter-break\bullet\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include\;C:\Hg\winter-break\bullet\bullet3-2.85.1\src</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -68,7 +68,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include\;C:\Hg\winter-break\bullet\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include\;C:\Hg\winter-break\bullet\bullet3-2.85.1\src</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -98,6 +98,17 @@
     <None Include="shaders\blinnphong_v.glsl" />
     <None Include="shaders\passThru_f.glsl" />
     <None Include="shaders\passThru_v.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="bullet\src\BulletCollision\BulletCollision.vcxproj">
+      <Project>{af07f4b6-c15d-363f-8a2f-d152ba863646}</Project>
+    </ProjectReference>
+    <ProjectReference Include="bullet\src\BulletDynamics\BulletDynamics.vcxproj">
+      <Project>{f4f6ee9d-4f25-3523-bb2c-a5469c963f72}</Project>
+    </ProjectReference>
+    <ProjectReference Include="bullet\src\LinearMath\LinearMath.vcxproj">
+      <Project>{729f25ac-e3b9-38ea-9238-41ab53d633d3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -16,6 +16,8 @@
 #include <GLM\gtc\type_ptr.hpp>
 #include <GLM\gtx\rotate_vector.hpp>
 
+#include <btBulletDynamicsCommon.h>
+
 // user headers
 #include "loadObject.h"
 #include "InputManager.h"
@@ -32,6 +34,13 @@ glm::vec3 lightPosition(10.0, 0.0, 0.0);
 // Monitor our Projections
 glm::mat4x4 projectionMatrix;
 glm::mat4x4 modelViewMatrix;
+
+// Bullet core variables
+btBroadphaseInterface* broadphase;
+btDefaultCollisionConfiguration* collisionConfiguration;
+btCollisionDispatcher* dispatcher;
+btSequentialImpulseConstraintSolver* solver;
+btDiscreteDynamicsWorld* dynamicsWorld;
 
 // Defines and Core variables
 #define FRAMES_PER_SECOND 60
@@ -64,6 +73,24 @@ void drawObjects()
 void initObjects()
 {
 	//GameObject *floor = new GameObject()
+}
+
+bool initBullet()
+{
+	// Build the broadphase
+	broadphase = new btDbvtBroadphase();
+
+	// Set up the collision configuration and dispatcher
+	collisionConfiguration = new btDefaultCollisionConfiguration();
+	dispatcher = new btCollisionDispatcher(collisionConfiguration);
+
+	// The actual physics solver
+	solver = new btSequentialImpulseConstraintSolver;
+
+	// The world.
+	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+	dynamicsWorld->setGravity(btVector3(0, -10, 0));
+	return true;
 }
 
 /* function DisplayCallbackFunction(void)
@@ -281,6 +308,9 @@ int main(int argc, char **argv)
 	glEnableVertexAttribArray(6);	glBindAttribLocation(shader->getID(), 6, "normal");
 	glEnableVertexAttribArray(7);	glBindAttribLocation(shader->getID(), 7, "color");
 
+	// Initialize Bullet physics
+	initBullet();
+	
 	// Load Textures
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -296,5 +326,11 @@ int main(int argc, char **argv)
 	delete shader; shader = NULL;
 	KEYBOARD_INPUT->Destroy();
 
+	// Destroy Bullet core variables
+	delete dynamicsWorld;
+	delete solver;
+	delete collisionConfiguration;
+	delete dispatcher;
+	delete broadphase;
 	return 0;
 }
