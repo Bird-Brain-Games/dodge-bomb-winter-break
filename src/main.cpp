@@ -30,7 +30,7 @@ std::vector<btCollisionShape*> collisionShapes;
 
 // Create Shader
 Shader *shader;
-glm::vec3 lightPosition(10.0, 0.0, 0.0);
+glm::vec3 lightPosition(0.0, 0.0, 10.0);
 
 // Monitor our Projections
 glm::mat4x4 projectionMatrix;
@@ -67,6 +67,7 @@ void drawObjects()
 {
 	for (unsigned int i = 0; i < objects.size(); i++)
 	{
+
 		objects[i]->draw(shader);
 	}
 }
@@ -164,6 +165,11 @@ void DisplayCallbackFunction(void)
 	shader->bind();
 
 	// Draw our scene
+	shader->uniformMat4x4("mvm", &modelViewMatrix);
+	shader->uniformMat4x4("prm", &projectionMatrix);
+	shader->uniformVector("lightPosition", &lightPosition);
+
+	drawObjects();
 
 	shader->unbind();
 
