@@ -9,6 +9,8 @@
 #include <GLM\glm.hpp>
 #include <vector>
 
+class Shader;
+
 struct Face
 {
 	Face() {}
@@ -42,4 +44,21 @@ private:
 	float *colors;
 
 	unsigned int numtris; // count number of vertices for data creation
+};
+
+// holds the information necessary to display a texture 
+// using blinn-phong shading
+class Texture
+{
+public:
+	Texture(char* _diffuseTex, char* _specularTex, float _shininess);
+	Texture(GLuint _diffuseTex, GLuint _specularTex, float _shininess);
+
+	// sends the values to the shader
+	void bind(Shader* s);
+
+private:
+	GLuint diffuseTex;
+	GLuint specularTex;
+	float shininess;
 };
