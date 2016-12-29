@@ -15,52 +15,24 @@
 #include "loadObject.h"
 #include "Shader.h"
 #include <iostream>
+#include <btBulletDynamicsCommon.h>
 
 class GameObject
 {
 public:
-	GameObject(LoadObject * _obj);
-	GameObject(char * filepath);
+	GameObject(LoadObject * _model, btRigidBody *_body);
+	~GameObject();
 
-	void draw(Shader *s);
-	void update(float deltaT);
+	virtual void draw(Shader *s);
+	virtual void update(float deltaT);
 
-public:
-	////////////////////////////////////////////////	Utility functions
-	//setters and getters
-	void setPos(glm::vec3 const & _set);
-	void setVel(glm::vec3 const & _set);
-	void setAcc(glm::vec3 const & _set);
-	void setRot(glm::vec3 const & _set);
-	void setMass(float _mass);
-	void setScale(glm::vec3 newScale, bool changeBoundingBox = true);
-
-	void addPos(glm::vec3 const & _set);
-	void addVel(glm::vec3 const & _set);
-	void addAcc(glm::vec3 const & _set);
-	void addRot(glm::vec3 const & _set);
-
-	glm::vec3 const & getPos() const;
-	glm::vec3 const & getVel() const;
-	glm::vec3 const & getAcc() const;
-	glm::vec3 const & getRot() const;
-	glm::vec3 const & getScale() const;
+	btRigidBody* getRigidBody() { return body; };
 
 private:
-	// Bare minimum
-	glm::vec3 position;
-	GLfloat yRotation;
+	// Physics rigid body with Bullet
+	btRigidBody* body;
 
 	// loaded obj file
-	LoadObject *obj;
-
-	// physics properties
-	float mass;
-	glm::vec3 velocity;
-	glm::vec3 acc;
-	glm::vec3 rot;
-
-	glm::vec3 dimension;
-	glm::vec3 scale;
+	LoadObject *model;
 
 };

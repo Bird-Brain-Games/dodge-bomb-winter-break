@@ -9,12 +9,12 @@
 #include <math.h>
 
 // 3rd Party Libraries
-#include <GL\glew.h>
-#include <GLUT\glut.h>
-#include <IL\ilut.h>
+#include "gl\glew.h"
+#include "gl\freeglut.h"
 #include <GLM\glm.hpp>
 #include <GLM\gtc\type_ptr.hpp>
 #include <GLM\gtx\rotate_vector.hpp>
+#include <IL\ilut.h>
 
 #include <btBulletDynamicsCommon.h>
 
@@ -26,6 +26,7 @@
 
 // create game object
 std::vector<GameObject*> objects;
+std::vector<btCollisionShape*> collisionShapes;
 
 // Create Shader
 Shader *shader;
@@ -55,7 +56,7 @@ int mousepositionY;
 glm::vec3 cameraPosition(0.0f, 0.0f, 10.0f);
 glm::vec3 forwardVector(0.0f, 0.0f, -1.0f);
 glm::vec3 rightVector;
-float movementScalar = 0.1;
+float movementScalar = 0.1f;
 
 // A few conversions to know
 const float degToRad = 3.14159f / 180.0f;
@@ -72,7 +73,52 @@ void drawObjects()
 
 void initObjects()
 {
-	//GameObject *floor = new GameObject()
+	// Shapes can be reused, to conserve memory
+	btCollisionShape* groundShape = new btBoxShape(btVector3(2.5, 0.5, 2.5));
+	btCollisionShape* ballShape = new btSphereShape(1);
+
+	collisionShapes.push_back(groundShape);
+	collisionShapes.push_back(ballShape);
+
+	// Determine the ball information
+	// quaternion - rotation, vec3 - position
+	btDefaultMotionState* ballMotionState =
+		new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
+	
+	btScalar mass = 1;
+	btVector3 ballInertia(0, 0, 0);
+	ballShape->calculateLocalInertia(mass, ballInertia);
+
+	btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI(mass, ballMotionState, ballShape, ballInertia);
+	btRigidBody* ballRigidBody = new btRigidBody(ballRigidBodyCI);	// Can use construction info for multiple objects
+	dynamicsWorld->addRigidBody(ballRigidBody);
+
+	// Determine the ground information
+	// quaternion - rotation, vec3 - position
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
+	
+	mass = 0;	// no mass means immovable
+	
+	btRigidBody::btRigidBodyConstructionInfo
+		groundRigidBodyCI(mass, groundMotionState, groundShape, btVector3(0, 0, 0));
+	btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
+	dynamicsWorld->addRigidBody(groundRigidBody);
+
+
+	// Load the .obj files
+	LoadObject* ballModel = new LoadObject();
+	ballModel->loadFromObject("obj\\sphere.obj");
+
+	LoadObject* groundModel = new LoadObject();
+	groundModel->loadFromObject("obj\\5x5box.obj");
+
+
+	// Create the game objects
+	GameObject* ball = new GameObject(ballModel, ballRigidBody);
+	GameObject* ground = new GameObject(groundModel, groundRigidBody);
+
+	objects.push_back(ball);
+	objects.push_back(ground);
 }
 
 bool initBullet()
@@ -135,7 +181,8 @@ void KeyboardCallbackFunction(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case 27: // the escape key
-		exit(0);
+		//exit(0);
+		glutLeaveMainLoop();
 		break;
 	}
 }
@@ -171,14 +218,15 @@ void TimerCallbackFunction(int value)
 	unsigned int deltaT = timeSinceStart - oldTimeSinceStart;
 	oldTimeSinceStart = timeSinceStart;
 
-	float deltaTasSeconds = float(deltaT) / 1000.0;
+	float deltaTasSeconds = float(deltaT) / 1000.0f;
 
-	for (unsigned int i = 0; i < objects.size(); i++)
+	// Bullet step through world simulation
+	dynamicsWorld->stepSimulation(deltaTasSeconds, 10);
+
+	/*for (unsigned int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->update(deltaTasSeconds);
-	}
-
-	// COLLISION 
+	}*/
 
 	//// force draw call next tick
 	glutPostRedisplay();
@@ -317,7 +365,7 @@ int main(int argc, char **argv)
 
 
 	// Load objects
-
+	initObjects();
 
 
 	/* start the event handler */
@@ -325,6 +373,21 @@ int main(int argc, char **argv)
 
 	delete shader; shader = NULL;
 	KEYBOARD_INPUT->Destroy();
+
+	// Remove rigid bodies
+	for (unsigned i = 0; i < objects.size(); i++)
+	{
+		dynamicsWorld->removeRigidBody(objects.at(i)->getRigidBody());
+		delete objects.at(i);
+		objects.at(i) = nullptr;
+	}
+
+	// Destroy collision shapes
+	for (unsigned i = 0; i < collisionShapes.size(); i++)
+	{
+		delete collisionShapes.at(i);
+		collisionShapes.at(i) = nullptr;
+	}
 
 	// Destroy Bullet core variables
 	delete dynamicsWorld;
