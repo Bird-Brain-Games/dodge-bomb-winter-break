@@ -21,10 +21,13 @@ class GameObject
 {
 public:
 	GameObject(LoadObject * _model, btRigidBody *_body);
+	GameObject(LoadObject * _model, btRigidBody *_body, GLuint _tex);
 	~GameObject();
 
 	virtual void draw(Shader *s);
 	virtual void update(float deltaT);
+
+	void setTex(GLuint);
 
 	btRigidBody* getRigidBody() { return body; };
 
@@ -34,5 +37,8 @@ private:
 
 	// loaded obj file
 	LoadObject *model;
+
+	// Texture
+	GLuint tex;
 
 };
