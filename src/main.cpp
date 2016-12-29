@@ -27,6 +27,8 @@
 // create game object
 std::vector<GameObject*> objects;
 std::vector<btCollisionShape*> collisionShapes;
+std::vector<Texture*> textures;
+std::vector<LoadObject*> models;
 
 // Create Shader
 Shader *shader;
@@ -111,14 +113,15 @@ void initObjects()
 	// Load the .obj files
 	LoadObject* ballModel = new LoadObject();
 	ballModel->loadFromObject("obj\\sphere.obj");
+	models.push_back(ballModel);
 
 	LoadObject* groundModel = new LoadObject();
 	groundModel->loadFromObject("obj\\5x5box.obj");
-
+	models.push_back(groundModel);
 
 	// Create the game objects
-	GameObject* ball = new GameObject(ballModel, ballRigidBody);
-	GameObject* ground = new GameObject(groundModel, groundRigidBody);
+	GameObject* ball = new GameObject(ballModel, ballRigidBody, textures[0]);
+	GameObject* ground = new GameObject(groundModel, groundRigidBody, textures[1]);
 
 	objects.push_back(ball);
 	objects.push_back(ground);
@@ -368,16 +371,17 @@ int main(int argc, char **argv)
 	initBullet();
 	
 	// Load Textures
-	GLuint boxTex = ilutGLLoadImage("img//Blake.png");
-	GLuint ballTex = ilutGLLoadImage("img//Blake.png");
+	Texture* ballTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
+	Texture* groundTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
+
+	textures.push_back(ballTex);
+	textures.push_back(groundTex);
+	
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 
 	// Load objects
 	initObjects();
-
-	objects[0]->setTex(ballTex);
-	objects[1]->setTex(boxTex);
 
 	/* start the event handler */
 	glutMainLoop();
@@ -385,12 +389,26 @@ int main(int argc, char **argv)
 	delete shader; shader = NULL;
 	KEYBOARD_INPUT->Destroy();
 
-	// Remove rigid bodies
+	// Destroy game objects
 	for (unsigned i = 0; i < objects.size(); i++)
 	{
 		dynamicsWorld->removeRigidBody(objects.at(i)->getRigidBody());
 		delete objects.at(i);
 		objects.at(i) = nullptr;
+	}
+
+	// Destroy loaded models
+	for (unsigned i = 0; i < models.size(); i++)
+	{
+		delete models.at(i);
+		models.at(i) = nullptr;
+	}
+
+	// Destroy loaded textures
+	for (unsigned i = 0; i < textures.size(); i++)
+	{
+		delete textures.at(i);
+		textures.at(i) = nullptr;
 	}
 
 	// Destroy collision shapes

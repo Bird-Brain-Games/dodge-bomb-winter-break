@@ -9,6 +9,9 @@
 #include <fstream>
 
 #include <GLUT\glut.h>
+#include <IL\ilut.h>
+
+#include "Shader.h"
 
 LoadObject::~LoadObject()
 {
@@ -178,4 +181,25 @@ bool LoadObject::loadFromObject(char* filename)
 	delete[] this->colors;
 
 	return true;
+}
+
+Texture::Texture(char* _diffuseTex, char* _specularTex, float _shininess)
+{
+	diffuseTex = ilutGLLoadImage(_diffuseTex);
+	specularTex = ilutGLLoadImage(_specularTex);
+	shininess = _shininess;
+}
+
+Texture::Texture(GLuint _diffuseTex, GLuint _specularTex, float _shininess)
+{
+	diffuseTex = _diffuseTex;
+	specularTex = _specularTex;
+	shininess = _shininess;
+}
+
+void Texture::bind(Shader* s)
+{
+	s->uniformTex("diffuseTex", diffuseTex, 0);
+	s->uniformTex("specularTex", specularTex, 1);
+	s->uniformFloat("shininess", 25.0f);
 }

@@ -1,14 +1,14 @@
 #include "GameObject.h"
 #include "GLM\gtc\type_ptr.hpp"
 
-GameObject::GameObject(LoadObject * _model, btRigidBody *_body)
+GameObject::GameObject(LoadObject* _model, btRigidBody* _body)
 {
 	model = _model;
 	body = _body;
-	tex = -1;
+	tex = nullptr;
 }
 
-GameObject::GameObject(LoadObject * _model, btRigidBody *_body, GLuint _tex)
+GameObject::GameObject(LoadObject* _model, btRigidBody* _body, Texture* _tex)
 {
 	model = _model;
 	body = _body;
@@ -17,7 +17,6 @@ GameObject::GameObject(LoadObject * _model, btRigidBody *_body, GLuint _tex)
 
 GameObject::~GameObject()
 {
-	delete model;
 	delete body->getMotionState();
 	delete body;
 
@@ -28,9 +27,9 @@ GameObject::~GameObject()
 void GameObject::draw(Shader* s)
 {
 	// Bind texture here if has one
-	if (tex >= 0)
+	if (tex != nullptr)
 	{
-
+		tex->bind(s);
 	}
 
 	// Compute local transformation
