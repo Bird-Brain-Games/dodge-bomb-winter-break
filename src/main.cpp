@@ -65,10 +65,12 @@ const float radToDeg = 180.0f / 3.14159f;
 // separate, cleaner, draw function
 void drawObjects()
 {
+	glBindTexture(GL_TEXTURE_2D, 0);
 	for (unsigned int i = 0; i < objects.size(); i++)
 	{
 
 		objects[i]->draw(shader);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 
@@ -366,13 +368,16 @@ int main(int argc, char **argv)
 	initBullet();
 	
 	// Load Textures
-
+	GLuint boxTex = ilutGLLoadImage("img//Blake.png");
+	GLuint ballTex = ilutGLLoadImage("img//Blake.png");
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 
 	// Load objects
 	initObjects();
 
+	objects[0]->setTex(ballTex);
+	objects[1]->setTex(boxTex);
 
 	/* start the event handler */
 	glutMainLoop();
