@@ -8,6 +8,7 @@
     <ClCompile Include="src\loadObject.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\GameObject.cpp" />
+    <ClCompile Include="src\BulletDebugger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Shader.h">
@@ -17,6 +18,7 @@
     <ClInclude Include="src\InputManager.h" />
     <ClInclude Include="src\loadObject.h" />
     <ClInclude Include="src\KeyframeController.h" />
+    <ClInclude Include="src\BulletDebug.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">

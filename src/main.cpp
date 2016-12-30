@@ -23,6 +23,7 @@
 #include "InputManager.h"
 #include "GameObject.h"
 #include "Shader.h"
+#include "BulletDebug.h"
 
 // create game object
 std::vector<GameObject*> objects;
@@ -44,6 +45,10 @@ btDefaultCollisionConfiguration* collisionConfiguration;
 btCollisionDispatcher* dispatcher;
 btSequentialImpulseConstraintSolver* solver;
 btDiscreteDynamicsWorld* dynamicsWorld;
+
+// Bullet debug
+BulletDebugger *debugger;
+bool useDebug = false;
 
 // Defines and Core variables
 #define FRAMES_PER_SECOND 60
@@ -142,6 +147,10 @@ bool initBullet()
 	// The world.
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
+
+	// The debugger
+	debugger = new BulletDebugger();
+	dynamicsWorld->setDebugDrawer(debugger);
 	return true;
 }
 
@@ -177,6 +186,14 @@ void DisplayCallbackFunction(void)
 	drawObjects();
 
 	shader->unbind();
+
+	// Draw the debug (if on)
+	if (debugger->getDebugMode() != 0)
+	{
+		debugger->SetMatrices(modelViewMatrix, projectionMatrix);
+		dynamicsWorld->debugDrawWorld();
+	}
+	
 
 	glutSwapBuffers();
 }
@@ -218,7 +235,14 @@ void KeyboardUpCallbackFunction(unsigned char key, int x, int y)
 void TimerCallbackFunction(int value)
 {
 	//// process inputs
-
+	if (KEYBOARD_INPUT->CheckPressEvent('i') || KEYBOARD_INPUT->CheckPressEvent('I'))
+	{
+		useDebug = !useDebug;
+		if (useDebug)
+			debugger->setDebugMode(1);
+		else
+			debugger->setDebugMode(0);
+	}
 	KEYBOARD_INPUT->WipeEventList();
 
 
@@ -336,6 +360,9 @@ void CloseCallbackFunction()
 		collisionShapes.at(i) = nullptr;
 	}
 
+	// Destroy debugger
+	delete debugger; debugger = nullptr;
+
 	// Destroy Bullet core variables
 	delete dynamicsWorld;	dynamicsWorld = nullptr;
 	delete solver;	solver = nullptr;
@@ -427,7 +454,7 @@ int main(int argc, char **argv)
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	/* Initialize Shader */
-	shader = new Shader("shaders//passthru_v.glsl", "shaders//passthru_f.glsl");
+	shader = new Shader("shaders//blinnphong_v.glsl", "shaders//blinnphong_f.glsl");
 	shader->bind();
 	glEnableVertexAttribArray(4);	glBindAttribLocation(shader->getID(), 4, "vPos");
 	glEnableVertexAttribArray(5);	glBindAttribLocation(shader->getID(), 5, "texture");
