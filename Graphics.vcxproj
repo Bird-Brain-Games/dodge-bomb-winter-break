@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\BulletDebugger.cpp" />
     <ClCompile Include="src\GameObject.cpp" />
     <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\loadObject.cpp" />
@@ -87,6 +88,7 @@
     <ClCompile Include="src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\BulletDebug.h" />
     <ClInclude Include="src\GameObject.h" />
     <ClInclude Include="src\InputManager.h" />
     <ClInclude Include="src\KeyframeController.h" />
