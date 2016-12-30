@@ -255,14 +255,12 @@ void TimerCallbackFunction(int value)
 void WindowReshapeCallbackFunction(int w, int h)
 {
 	// switch to projection because we're changing projection
-	float asp = (float)w / (float)h;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, w, 0, h);
+	gluPerspective(45.0f, (float)w / h, 0.1f, 10000.0f);
 	windowWidth = w;
 	windowHeight = h;
-
-	//switch back to modelview
+	//glViewport(0, 0, windowWidth, windowHeight);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -299,6 +297,65 @@ void MousePassiveMotionCallbackFunction(int x, int y)
 	mousepositionY = y;
 }
 
+
+/* function CloseCallbackFunction()
+* Description:
+*	- this is called when the window is closed
+*/
+void CloseCallbackFunction()
+{
+	delete shader; shader = nullptr;
+	KEYBOARD_INPUT->Destroy();
+
+	// Destroy game objects
+	for (unsigned i = 0; i < objects.size(); i++)
+	{
+		dynamicsWorld->removeRigidBody(objects.at(i)->getRigidBody());
+		delete objects.at(i);
+		objects.at(i) = nullptr;
+	}
+
+	// Destroy loaded models
+	for (unsigned i = 0; i < models.size(); i++)
+	{
+		delete models.at(i);
+		models.at(i) = nullptr;
+	}
+
+	// Destroy loaded textures
+	for (unsigned i = 0; i < textures.size(); i++)
+	{
+		delete textures.at(i);
+		textures.at(i) = nullptr;
+	}
+
+	// Destroy collision shapes
+	for (unsigned i = 0; i < collisionShapes.size(); i++)
+	{
+		delete collisionShapes.at(i);
+		collisionShapes.at(i) = nullptr;
+	}
+
+	// Destroy Bullet core variables
+	delete dynamicsWorld;	dynamicsWorld = nullptr;
+	delete solver;	solver = nullptr;
+	delete collisionConfiguration;	collisionConfiguration = nullptr;
+	delete dispatcher;	dispatcher = nullptr;
+	delete broadphase;	broadphase = nullptr;
+}
+
+
+/* function InitErrorFuncCallbackFunction()
+* Description:
+*	- the error messages created on init are sent here
+*/
+void InitErrorFuncCallbackFunction(const char *fmt, va_list ap)
+{
+	printf(fmt, ap);
+	system("pause");
+	exit(-1);
+}
+
 /* function main()
 * Description:
 *  - this is the main function
@@ -306,6 +363,10 @@ void MousePassiveMotionCallbackFunction(int x, int y)
 */
 int main(int argc, char **argv)
 {
+
+	// Set up FreeGLUT error callbacks
+	glutInitErrorFunc(InitErrorFuncCallbackFunction);
+
 	// initialize the window and OpenGL properly
 	glutInit(&argc, argv);
 	glutInitWindowSize(windowWidth, windowHeight);
@@ -315,7 +376,10 @@ int main(int argc, char **argv)
 	// Initialize OpenGL Extention Wrangler
 	GLenum res = glewInit();
 	if (res != GLEW_OK)
+	{
 		std::cerr << "Glew failed to initialize!" << std::endl;
+		exit(-1);
+	}
 
 	// check OpenGL version
 	printf("Detecting OpenGL version... ");
@@ -332,6 +396,7 @@ int main(int argc, char **argv)
 	glutMotionFunc(MouseMotionCallbackFunction); // mouseMovedActive
 	glutPassiveMotionFunc(MousePassiveMotionCallbackFunction); // mouseMovedPassive
 	glutTimerFunc(1, TimerCallbackFunction, 0); // timer or tick
+	glutCloseFunc(CloseCallbackFunction);
 
 	////////////////////////////////////////////	Call some OpenGL parameters
 	glEnable(GL_CULL_FACE);
@@ -347,6 +412,8 @@ int main(int argc, char **argv)
 	//glEnable(GL_NORMALIZE);
 	glEnable(GL_COLOR_MATERIAL);
 	glShadeModel(GL_SMOOTH); //GL_FLAT
+
+
 
 	////////////////////////////////////////////	Textures & Texture parameters
 	glEnable(GL_TEXTURE_2D);
@@ -386,43 +453,5 @@ int main(int argc, char **argv)
 	/* start the event handler */
 	glutMainLoop();
 
-	delete shader; shader = NULL;
-	KEYBOARD_INPUT->Destroy();
-
-	// Destroy game objects
-	for (unsigned i = 0; i < objects.size(); i++)
-	{
-		dynamicsWorld->removeRigidBody(objects.at(i)->getRigidBody());
-		delete objects.at(i);
-		objects.at(i) = nullptr;
-	}
-
-	// Destroy loaded models
-	for (unsigned i = 0; i < models.size(); i++)
-	{
-		delete models.at(i);
-		models.at(i) = nullptr;
-	}
-
-	// Destroy loaded textures
-	for (unsigned i = 0; i < textures.size(); i++)
-	{
-		delete textures.at(i);
-		textures.at(i) = nullptr;
-	}
-
-	// Destroy collision shapes
-	for (unsigned i = 0; i < collisionShapes.size(); i++)
-	{
-		delete collisionShapes.at(i);
-		collisionShapes.at(i) = nullptr;
-	}
-
-	// Destroy Bullet core variables
-	delete dynamicsWorld;
-	delete solver;
-	delete collisionConfiguration;
-	delete dispatcher;
-	delete broadphase;
 	return 0;
 }
