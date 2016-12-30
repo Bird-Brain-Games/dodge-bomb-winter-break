@@ -446,7 +446,6 @@ int main(int argc, char **argv)
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-
 	// Load objects
 	initObjects();
 
