@@ -255,14 +255,12 @@ void TimerCallbackFunction(int value)
 void WindowReshapeCallbackFunction(int w, int h)
 {
 	// switch to projection because we're changing projection
-	float asp = (float)w / (float)h;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, w, 0, h);
+	gluPerspective(45.0f, (float)w / h, 0.1f, 10000.0f);
 	windowWidth = w;
 	windowHeight = h;
-
-	//switch back to modelview
+	//glViewport(0, 0, windowWidth, windowHeight);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -299,93 +297,13 @@ void MousePassiveMotionCallbackFunction(int x, int y)
 	mousepositionY = y;
 }
 
-/* function main()
+
+/* function CloseCallbackFunction()
 * Description:
-*  - this is the main function
-*  - does initialization and then calls glutMainLoop() to start the event handler
+*	- this is called when the window is closed
 */
-int main(int argc, char **argv)
+void CloseCallbackFunction()
 {
-	// initialize the window and OpenGL properly
-	glutInit(&argc, argv);
-	glutInitWindowSize(windowWidth, windowHeight);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutCreateWindow("Dodge Bomb");
-
-	// Initialize OpenGL Extention Wrangler
-	GLenum res = glewInit();
-	if (res != GLEW_OK)
-		std::cerr << "Glew failed to initialize!" << std::endl;
-
-	// check OpenGL version
-	printf("Detecting OpenGL version... ");
-	const unsigned char *version = glGetString(GL_VERSION);
-	printf("Using OpenGL version %s\n", version);
-
-
-	// set up our function callbacks
-	glutDisplayFunc(DisplayCallbackFunction); // draw
-	glutKeyboardFunc(KeyboardCallbackFunction); // keyDown
-	glutKeyboardUpFunc(KeyboardUpCallbackFunction); // keyUp
-	glutReshapeFunc(WindowReshapeCallbackFunction); // windowResized
-	glutMouseFunc(MouseClickCallbackFunction); // mouseClick
-	glutMotionFunc(MouseMotionCallbackFunction); // mouseMovedActive
-	glutPassiveMotionFunc(MousePassiveMotionCallbackFunction); // mouseMovedPassive
-	glutTimerFunc(1, TimerCallbackFunction, 0); // timer or tick
-
-	////////////////////////////////////////////	Call some OpenGL parameters
-	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CCW);
-	glCullFace(GL_BACK);
-	glEnable(GL_DEPTH_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
-
-	// Turn on the lights
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	//glEnable(GL_NORMALIZE);
-	glEnable(GL_COLOR_MATERIAL);
-	glShadeModel(GL_SMOOTH); //GL_FLAT
-
-	////////////////////////////////////////////	Textures & Texture parameters
-	glEnable(GL_TEXTURE_2D);
-	ilInit();
-	iluInit();
-	ilutRenderer(ILUT_OPENGL);
-
-	// Magnification, minification, mipmaps
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	/* Initialize Shader */
-	shader = new Shader("shaders//passthru_v.glsl", "shaders//passthru_f.glsl");
-	shader->bind();
-	glEnableVertexAttribArray(4);	glBindAttribLocation(shader->getID(), 4, "vPos");
-	glEnableVertexAttribArray(5);	glBindAttribLocation(shader->getID(), 5, "texture");
-	glEnableVertexAttribArray(6);	glBindAttribLocation(shader->getID(), 6, "normal");
-	glEnableVertexAttribArray(7);	glBindAttribLocation(shader->getID(), 7, "color");
-
-	// Initialize Bullet physics
-	initBullet();
-	
-	// Load Textures
-	Texture* ballTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
-	Texture* groundTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
-
-	textures.push_back(ballTex);
-	textures.push_back(groundTex);
-	
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-
-	// Load objects
-	initObjects();
-
-	/* start the event handler */
-	glutMainLoop();
-
 	delete shader; shader = NULL;
 	KEYBOARD_INPUT->Destroy();
 
@@ -424,5 +342,120 @@ int main(int argc, char **argv)
 	delete collisionConfiguration;
 	delete dispatcher;
 	delete broadphase;
+}
+
+
+/* function InitErrorFuncCallbackFunction()
+* Description:
+*	- the error messages created on init are sent here
+*/
+void InitErrorFuncCallbackFunction(const char *fmt, va_list ap)
+{
+	printf(fmt, ap);
+	system("pause");
+	exit(-1);
+}
+
+/* function main()
+* Description:
+*  - this is the main function
+*  - does initialization and then calls glutMainLoop() to start the event handler
+*/
+int main(int argc, char **argv)
+{
+
+	// Set up FreeGLUT error callbacks
+	glutInitErrorFunc(InitErrorFuncCallbackFunction);
+
+	// initialize the window and OpenGL properly
+	glutInit(&argc, argv);
+	glutInitWindowSize(windowWidth, windowHeight);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+	glutCreateWindow("Dodge Bomb");
+
+	// Initialize OpenGL Extention Wrangler
+	GLenum res = glewInit();
+	if (res != GLEW_OK)
+	{
+		std::cerr << "Glew failed to initialize!" << std::endl;
+		exit(-1);
+	}
+
+	// check OpenGL version
+	printf("Detecting OpenGL version... ");
+	const unsigned char *version = glGetString(GL_VERSION);
+	printf("Using OpenGL version %s\n", version);
+
+
+	// set up our function callbacks
+	glutDisplayFunc(DisplayCallbackFunction); // draw
+	glutKeyboardFunc(KeyboardCallbackFunction); // keyDown
+	glutKeyboardUpFunc(KeyboardUpCallbackFunction); // keyUp
+	glutReshapeFunc(WindowReshapeCallbackFunction); // windowResized
+	glutMouseFunc(MouseClickCallbackFunction); // mouseClick
+	glutMotionFunc(MouseMotionCallbackFunction); // mouseMovedActive
+	glutPassiveMotionFunc(MousePassiveMotionCallbackFunction); // mouseMovedPassive
+	glutTimerFunc(1, TimerCallbackFunction, 0); // timer or tick
+	glutCloseFunc(CloseCallbackFunction);
+
+	////////////////////////////////////////////	Call some OpenGL parameters
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CCW);
+	glCullFace(GL_BACK);
+	glEnable(GL_DEPTH_TEST);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+
+	// Turn on the lights
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	//glEnable(GL_NORMALIZE);
+	glEnable(GL_COLOR_MATERIAL);
+	glShadeModel(GL_SMOOTH); //GL_FLAT
+
+
+
+	////////////////////////////////////////////	Textures & Texture parameters
+	glEnable(GL_TEXTURE_2D);
+	ilInit();
+	iluInit();
+	ilutRenderer(ILUT_OPENGL);
+
+	// Magnification, minification, mipmaps
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	/* Initialize Shader */
+	shader = new Shader("shaders//passthru_v.glsl", "shaders//passthru_f.glsl");
+	shader->bind();
+	glEnableVertexAttribArray(4);	glBindAttribLocation(shader->getID(), 4, "vPos");
+	glEnableVertexAttribArray(5);	glBindAttribLocation(shader->getID(), 5, "texture");
+	glEnableVertexAttribArray(6);	glBindAttribLocation(shader->getID(), 6, "normal");
+	glEnableVertexAttribArray(7);	glBindAttribLocation(shader->getID(), 7, "color");
+
+	// Initialize Bullet physics
+	initBullet();
+	
+	// Load Textures
+	Texture* ballTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
+	Texture* groundTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
+
+	textures.push_back(ballTex);
+	textures.push_back(groundTex);
+	
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+	// Load objects
+	initObjects();
+
+	// Sets glut to leave the main loop upon closing the window
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
+		GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+
+	/* start the event handler */
+	glutMainLoop();
+
 	return 0;
 }

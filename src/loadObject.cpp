@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <GLUT\glut.h>
+#include <GL\freeglut.h>
 #include <IL\ilut.h>
 
 #include "Shader.h"
@@ -134,7 +134,7 @@ bool LoadObject::loadFromObject(char* filename)
 	this->colors = new float[numtris * 3];
 	for (unsigned int i = 0; i < numtris * 3; i++)
 	{
-		colors[i] = norms[i] + 1.0 / 2.0;
+		colors[i] = norms[i] + 1.0f / 2.0f;
 	}
 
 	glGenVertexArrays(1, &vao);
