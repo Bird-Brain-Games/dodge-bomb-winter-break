@@ -304,7 +304,7 @@ void MousePassiveMotionCallbackFunction(int x, int y)
 */
 void CloseCallbackFunction()
 {
-	delete shader; shader = NULL;
+	delete shader; shader = nullptr;
 	KEYBOARD_INPUT->Destroy();
 
 	// Destroy game objects
@@ -337,11 +337,11 @@ void CloseCallbackFunction()
 	}
 
 	// Destroy Bullet core variables
-	delete dynamicsWorld;
-	delete solver;
-	delete collisionConfiguration;
-	delete dispatcher;
-	delete broadphase;
+	delete dynamicsWorld;	dynamicsWorld = nullptr;
+	delete solver;	solver = nullptr;
+	delete collisionConfiguration;	collisionConfiguration = nullptr;
+	delete dispatcher;	dispatcher = nullptr;
+	delete broadphase;	broadphase = nullptr;
 }
 
 
@@ -445,7 +445,6 @@ int main(int argc, char **argv)
 	textures.push_back(groundTex);
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
-
 
 	// Load objects
 	initObjects();
