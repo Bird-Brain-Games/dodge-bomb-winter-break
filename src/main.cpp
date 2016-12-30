@@ -449,10 +449,6 @@ int main(int argc, char **argv)
 	// Load objects
 	initObjects();
 
-	// Sets glut to leave the main loop upon closing the window
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
-		GLUT_ACTION_GLUTMAINLOOP_RETURNS);
-
 	/* start the event handler */
 	glutMainLoop();
 
