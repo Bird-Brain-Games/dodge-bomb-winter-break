@@ -1,123 +1,89 @@
-// NAME HERE
-// GameObject.h
-// - Class that represents a object in game
-// - Bare minimum must have
-// -- a renderable (a sprite, a 3d obj, a wavefront obj)
-// -- A position in gamespace (x,y,z)
-// - additional properties may be
-// -- velocity
-// -- acceleration
-// -- rotations (x, y, z)
-// -- texture
-// -- collision bounds (radius, xMins and xMaxs for cube)
 #pragma once
 
-#include <GLM\glm.hpp>
-#include "loadObject.h"
-#include "Shader.h"
-#include <iostream>
+#include <GLM/glm.hpp>
+#include <GLM\gtx\transform.hpp>
+#include <GLM\gtc\type_ptr.hpp>
+#include <vector>
+#include <string>
+
+#include "objLoader.h"
+#include "JointTypes.h"
+#include "shaderLoader.h"
 
 class GameObject
 {
+
+protected:
+
+	float m_pScale;
+
+	float m_pRotX, m_pRotY, m_pRotZ; // local rotation angles
+
+
+	glm::mat4 m_pLocalRotation;
+
+	glm::mat4 m_pLocalTransformMatrix;
+	glm::mat4 m_pLocalToWorldMatrix;
+
+	glm::mat4 baseTranslation;
+
+
+	// Forward Kinematics
+	
+
+	// HTR animation
+	unsigned int m_pCurrentFrame;
+
+	int frameDelay = 1;
+	int frame = 0;
+	Loader sphere;
+	GLuint VBO;
+	GLuint VAO;
+
+
 public:
-	// Bare minimum
-	glm::vec3 position;
-	GLfloat yRotation;
+	glm::vec3 m_pLocalPosition;
 
-	// using Cube::draw() for generic renderable
-	LoadObject *obj;
+	GameObject();
+	GameObject(std::string _name, glm::vec3 position);
+	~GameObject();
+	
+	void init();
 
-	// bonus properties
-	glm::vec3 velocity;
+	void setPosition(glm::vec3 newPosition);
+	void setRotationAngleX(float newAngle);
+	void setRotationAngleY(float newAngle);
+	void setRotationAngleZ(float newAngle);
+	void setScale(float newScale);
 
-	GameObject(LoadObject * _obj)
-	{
-		obj = _obj; // reuse that there memory
-		position = glm::vec3(0.0, 0.0, 0.0);
-		velocity = glm::vec3(0.0, 0.0, 0.0);
-		yRotation = 0.0f;
-	}
+	glm::mat4 getLocalToWorldMatrix();
 
-	GameObject(char * filepath)
-	{
-		obj = new LoadObject();
-		obj->loadFromObject(filepath);
-		position = glm::vec3(0.0, 0.0, 0.0);
-		velocity = glm::vec3(0.0, 0.0, 0.0);
-		yRotation = 0.0f;
-	}
+	virtual void update(float dt);	
+	virtual void update();
+	void GameObject::createBase(std::vector<glm::mat4> &temp, int &count);
+	void GameObject::setMatrixStackOrignal(std::vector<glm::mat4>&, int&);
+	void GameObject::getMatrixStack(std::vector<glm::mat4>&, std::vector<glm::mat4>&, int&);
+	virtual void draw(glm::mat4, ShaderProgram);
 
+	// Animation from HTR
+	JointDescriptor* jointAnimation;
 
-	void draw(Shader *s)
-	{
-		// bind tex here if you had one
+	GameObject* m_pParent;
+	std::vector<GameObject*> m_pChildren;
+	
 
-		// compute local transformation
-		glm::mat4x4 rotation = glm::rotate(yRotation, glm::vec3(0.0, 1.0, 0.0));
-		glm::mat4x4 translation = glm::translate(position);
+	// Forward Kinematics
+	// Pass in null to make game object a root node
+	void setParent(GameObject* newParent);
+	void addChild(GameObject* newChild);
+	void removeChild(GameObject* rip);
+	glm::vec3 getWorldPosition();
+	glm::mat4 getWorldRotation();
+	bool isRoot();
 
-		glm::mat4x4 transform = translation * rotation;
-		s->uniformMat4x4("localTransform", &transform);
-
-		obj->draw();
-	}
-
-	void update(float deltaT)
-	{
-		position = position + (velocity*deltaT);
-	}
-
-	bool checkRadialCollision(GameObject *other)
-	{
-		float thisRadius = 1.0;	// this varies per object
-		float otherRadius = 1.0; //our 2x2x2 cube is assumed to have radius of 1 for now
-
-		float minimumSeparation = thisRadius + otherRadius;
-
-		float dist = glm::distance(this->position, other->position);
-
-		if (dist <= minimumSeparation)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	bool checkCollision(GameObject *other)
-	{
-		float thisMinX = position.x - 1.0; // position - width/2
-		float thisMaxX = position.x + 1.0;
-		float thisMinY = position.y - 1.0;
-		float thisMaxY = position.y + 1.0;
-		float thisMinZ = position.z - 1.0;
-		float thisMaxZ = position.z + 1.0;
-
-		float otherMinX = other->position.x - 1.0; // position - width/2
-		float otherMaxX = other->position.x + 1.0;
-		float otherMinY = other->position.y - 1.0;
-		float otherMaxY = other->position.y + 1.0;
-		float otherMinZ = other->position.z - 1.0;
-		float otherMaxZ = other->position.z + 1.0;
-
-		// check overlap X
-		if ((thisMinX >= otherMinX && thisMinX <= otherMaxX) ||
-			(thisMaxX >= otherMinX && thisMaxX <= otherMaxX))
-		{
-			// check overlap Y
-			if ((thisMinY >= otherMinY && thisMinY <= otherMaxY) ||
-				(thisMaxY >= otherMinY && thisMaxY <= otherMaxY))
-			{
-				// check overlap Z
-				if ((thisMinZ >= otherMinZ && thisMinZ <= otherMaxZ) ||
-					(thisMaxZ >= otherMinZ && thisMaxZ <= otherMaxZ))
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+	// Other Properties
+	std::string name;
+	glm::vec4 colour; 
+	// Mesh* ...
+	// Material* ...
 };
