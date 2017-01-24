@@ -11,12 +11,14 @@ layout (location = 3) in vec2 vertexUV;
 layout (location = 4) in vec3 normal;
 
 //out vec3 colour;
+out vec3 normal0;
 out vec2 UV;
 
 void main()
 {
 	mediump ivec4 boneIndex = ivec4(bones);
 	mediump vec4 boneWeights = weights;
+	vec4 normalM = vec4(0.0, 0.0, 0.0, 0.0);
 	
 	highp vec4 position = vec4(0.0, 0.0, 0.0, 0.0);
 	for (lowp int i = 0; i < 4; i++)
@@ -26,13 +28,15 @@ void main()
 			if (boneWeights.x > 0)
 			{
 				highp mat4 boneMatrix = BoneMatrixArray[boneIndex.x];
+				
 				position += boneMatrix * vec4(inPosition, 1.0) * boneWeights.x;
+				normalM += boneMatrix * vec4(normal, 0.0) * boneWeights.x;
 			}
 		}
 		boneIndex = boneIndex.yzwx;
 		boneWeights = boneWeights.yzwx;
 	}
-	
+	normal0 = normalize(normal0).xyz;
 	UV = vertexUV;
 	
 	gl_Position = mvp*position;

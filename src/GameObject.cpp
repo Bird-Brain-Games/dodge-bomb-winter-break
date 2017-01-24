@@ -1,6 +1,5 @@
 #include "GameObject.h"
 #include <iostream>
-#include "TTK\GraphicsUtils.h"
 GameObject::GameObject()
 	: m_pScale(1.0f),
 	colour(glm::vec4(1.0)),
@@ -240,7 +239,7 @@ void GameObject::getMatrixStack(std::vector<glm::mat4> &temp, std::vector<glm::m
 }
 
 
-void GameObject::draw(glm::mat4 mvp, ShaderProgram shader)
+void GameObject::drawSkeleton(glm::mat4 mvp, ShaderProgram shader)
 {
 	glBindVertexArray(VAO);
 	glm::mat4 mvp2 = mvp * m_pLocalToWorldMatrix;
@@ -249,7 +248,7 @@ void GameObject::draw(glm::mat4 mvp, ShaderProgram shader)
 	glDrawArrays(GL_TRIANGLES, 0, sphere.getVertices().size());
 	// Draw children
 	for (int i = 0; i < m_pChildren.size(); ++i)
-		m_pChildren[i]->draw(mvp, shader);
+		m_pChildren[i]->drawSkeleton(mvp, shader);
 }
 
 void GameObject::setParent(GameObject* newParent)
