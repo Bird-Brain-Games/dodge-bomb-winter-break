@@ -28,8 +28,8 @@ glm::mat4x4 modelViewMatrix;
 #define FRAMES_PER_SECOND 60
 const int FRAME_DELAY = 1000 / FRAMES_PER_SECOND; // Miliseconds per frame
 
-int windowWidth = 600;
-int windowHeight = 600;
+int windowWidth = 1920;
+int windowHeight = 1080;
 
 //mouse variables
 float mousepositionX;
@@ -44,12 +44,12 @@ glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
 //camera defaults
 glm::vec3 direction;
-glm::vec3 position = glm::vec3(0.0f, 0.0f, -10.0f);
+glm::vec3 position = glm::vec3(-8.5f, -1.0f, 12.0f);
 glm::vec3 gameDefaultPos = glm::vec3(0.0f);
 glm::vec3 menuDefaultPos = glm::vec3(0.0f);
 glm::vec2 gameDefaultAngle(0.0f);
 glm::vec2 menuDefaultAngle(0.0f);
-glm::vec2 currentAngles = gameDefaultAngle;
+glm::vec2 currentAngles = glm::vec2(2.5f, 0.01f);
 float mouseSpeed = 0.005f;
 float speed = 0.07f;
 float initialFoV = 45.0f;
@@ -184,14 +184,15 @@ void init()
 	glBindVertexArray(VAO[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[3]);
 	glBufferData(GL_ARRAY_BUFFER, test.UV.size() * sizeof(glm::vec2), test.UV.data(), GL_DYNAMIC_DRAW);
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray(VAO[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
 	glBufferData(GL_ARRAY_BUFFER, test.normals.size() * sizeof(glm::vec3), test.normals.data(), GL_DYNAMIC_DRAW);
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 
 	skeleton.loadHTR("assets\\htr\\bombot4.htr");
 	skeleton.createGameObjects();
@@ -206,13 +207,16 @@ void init()
 	glGenTextures(1, &tex);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	//glGenSamplers(1, &texSampler[texIt]);
-	ilutGLLoadImage("assets\\img\\bombot.png");
-
+	
+	tex = ilutGLLoadImage("assets\\img\\bombot.png");
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP),
 		ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),
 		0, ilGetInteger(IL_IMAGE_FORMAT), GL_UNSIGNED_BYTE,
 		ilGetData()); /* Texture specification */
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	int temporary = ilGetInteger(IL_IMAGE_HEIGHT);
 	for (int i = 0; i < 28; i++)
@@ -255,10 +259,11 @@ void DisplayCallbackFunction(void)
 	int iBoneMatrixArray = glGetUniformLocation(skinning.getProgramID(), "BoneMatrixArray");
 	int iSampler = glGetUniformLocation(skinning.getProgramID(), "gSampler");
 
-
+	glUniform1i(iSampler, 0);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 
-	glUniform1i(iSampler, 0);
+
 	glUniformMatrix4fv(imvp, 1, GL_FALSE, glm::value_ptr(mvp));
 	glUniformMatrix4fv(iBoneMatrixArray, 28, GL_FALSE, glm::value_ptr(multipliedMatricies[0]));
 	boneCount = 28;
@@ -324,7 +329,9 @@ void DisplayCallbackFunction(void)
 		glBindVertexArray(VAO[0]);
 		basicShader.useProgram();
 		int imvp2 = glGetUniformLocation(basicShader.getProgramID(), "mvp");
+		int iSampler2 = glGetUniformLocation(skinning.getProgramID(), "gSampler");
 		glUniformMatrix4fv(imvp2, 1, GL_FALSE, glm::value_ptr(mvp));
+		glUniform1i(iSampler, tex);
 
 		glDrawArrays(GL_TRIANGLES, 0, size);
 	}
@@ -593,7 +600,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitWindowSize(windowWidth, windowHeight);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutCreateWindow("soul less");
+	glutCreateWindow("mesh skinning");
 
 	// Initialize OpenGL Extention Wrangler
 	GLenum res = glewInit();
@@ -645,9 +652,9 @@ int main(int argc, char **argv)
 
 
 
-	vertLoader.loadShader("assets\\shaders\\shader_colour.vert", GL_VERTEX_SHADER);
+	vertLoader.loadShader("assets\\shaders\\shader.vert", GL_VERTEX_SHADER);
+	fragLoader.loadShader("assets\\shaders\\shader.frag", GL_FRAGMENT_SHADER);
 	skinningLoader.loadShader("assets\\shaders\\skinning.vert", GL_VERTEX_SHADER);
-	fragLoader.loadShader("assets\\shaders\\shader_colour.frag", GL_FRAGMENT_SHADER);
 	textureLoader.loadShader("assets\\shaders\\shader_texture.frag", GL_FRAGMENT_SHADER);
 
 	basicShader.createProgram();
@@ -669,22 +676,3 @@ int main(int argc, char **argv)
 	//delete shader; shader = NULL;
 	return 0;
 }
-
-//if (__cplusplus == 201103L) std::cout << "C++11\n";
-//else if (__cplusplus == 199711L) std::cout << "C++98\n";
-//else std::cout << "pre-standard C++\n";
-//
-//Character player("Cam");
-//Character wolf("Wolf");
-//
-//
-//while (wolf.getHealth() > 0)
-//{
-//	if (GetAsyncKeyState(VK_UP))
-//	{
-//		player.attack(&wolf);
-//		wolf.attack(&player);
-//		Sleep(500);
-//	}
-//
-//}

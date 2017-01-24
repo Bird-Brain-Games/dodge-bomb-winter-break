@@ -63,7 +63,8 @@ public:
 	void GameObject::createBase(std::vector<glm::mat4> &temp, int &count);
 	void GameObject::setMatrixStackOrignal(std::vector<glm::mat4>&, int&);
 	void GameObject::getMatrixStack(std::vector<glm::mat4>&, std::vector<glm::mat4>&, int&);
-	virtual void draw(glm::mat4, ShaderProgram);
+	virtual void drawSkeleton(glm::mat4, ShaderProgram);
+	//virtual void draw();
 
 	// Animation from HTR
 	JointDescriptor* jointAnimation;

@@ -67,12 +67,14 @@ void ShaderLoader::deleteShader()
 
 void ShaderLoader::OutputProgramLog() const
 {
-	GLint maxLength = 0;
+	int maxLength = 0;
 	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
 
 	// The maxLength includes the NULL character
-	std::vector<GLchar> errorLog(maxLength);
-	glGetShaderInfoLog(shaderID, maxLength, &maxLength, &errorLog[0]);
+	std::string log(maxLength, ' ');
+	glGetShaderInfoLog(shaderID, maxLength, &maxLength, &log[0]);
+
+	std::cout << log << std::endl;
 }
 
 ShaderProgram::ShaderProgram()
