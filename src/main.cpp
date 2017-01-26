@@ -24,6 +24,7 @@
 #include "GameObject.h"
 #include "Shader.h"
 #include "BulletDebug.h"
+#include "ANILoader.h"
 
 // create game object
 std::vector<GameObject*> objects;
@@ -33,6 +34,7 @@ std::vector<LoadObject*> models;
 
 // Create Shader
 Shader *shader;
+Shader *meshSkin;
 glm::vec3 lightPosition(0.0, 0.0, 10.0);
 
 // Monitor our Projections
@@ -57,17 +59,25 @@ const int FRAME_DELAY = 1000 / FRAMES_PER_SECOND; // Miliseconds per frame
 int windowWidth = 1024;
 int windowHeight = 768;
 
-int mousepositionX;
-int mousepositionY;
-
+float mousepositionX;
+float mousepositionY;
+float lastMousepositionX;
+float lastMousepositionY;
+void makeMatricies();
 glm::vec3 cameraPosition(0.0f, 0.0f, 10.0f);
 glm::vec3 forwardVector(0.0f, 0.0f, -1.0f);
 glm::vec3 rightVector;
 float movementScalar = 0.1f;
-
+bool cameraLock = true;
+bool mouseMovement = true;
 // A few conversions to know
 const float degToRad = 3.14159f / 180.0f;
 const float radToDeg = 180.0f / 3.14159f;
+
+glm::mat4 getViewMatrix();
+glm::mat4 getProjectionMatrix();
+int keyDown[255];
+
 
 // separate, cleaner, draw function
 void drawObjects()
@@ -75,7 +85,6 @@ void drawObjects()
 	glBindTexture(GL_TEXTURE_2D, 0);
 	for (unsigned int i = 0; i < objects.size(); i++)
 	{
-
 		objects[i]->draw(shader);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
@@ -94,7 +103,7 @@ void initObjects()
 	// quaternion - rotation, vec3 - position
 	btDefaultMotionState* ballMotionState =
 		new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
-	
+
 	btScalar mass = 1;
 	btVector3 ballInertia(0, 0, 0);
 	ballShape->calculateLocalInertia(mass, ballInertia);
@@ -106,9 +115,9 @@ void initObjects()
 	// Determine the ground information
 	// quaternion - rotation, vec3 - position
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
-	
+
 	mass = 0;	// no mass means immovable
-	
+
 	btRigidBody::btRigidBodyConstructionInfo
 		groundRigidBodyCI(mass, groundMotionState, groundShape, btVector3(0, 0, 0));
 	btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
@@ -124,12 +133,21 @@ void initObjects()
 	groundModel->loadFromObject("obj\\5x5box.obj");
 	models.push_back(groundModel);
 
+
+
+	ANILoader* ani = new ANILoader();
+	ani->loadHTR("assets\\htr\\finalBombot.htr");
+	ani->createNodes();
+
+	Holder* robotModel = new Holder(ani->getRootNode(), ani);
+
 	// Create the game objects
 	GameObject* ball = new GameObject(ballModel, ballRigidBody, textures[0]);
 	GameObject* ground = new GameObject(groundModel, groundRigidBody, textures[1]);
-
+	GameObject* robot = new GameObject(robotModel, ballRigidBody, textures[2]);
 	objects.push_back(ball);
 	objects.push_back(ground);
+	objects.push_back(robot);
 }
 
 bool initBullet()
@@ -161,30 +179,32 @@ bool initBullet()
 */
 void DisplayCallbackFunction(void)
 {
+
+	makeMatricies();
+
 	////////////////////////////////////////////////////////////////// Clear our screen
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	////////////////////////////////////////////////////////////////// Draw Our Scene
 	glViewport(0, 0, windowWidth, windowHeight);
-	projectionMatrix = glm::perspective(45.0f, 1.0f, 0.1f, 10000.f);
-	modelViewMatrix = glm::mat4x4(1.f);
+	projectionMatrix = getProjectionMatrix();
+	modelViewMatrix = getViewMatrix();
 
-	glm::mat4x4 transform = glm::lookAt(
-		cameraPosition,
-		cameraPosition + forwardVector,
-		glm::vec3(0.f, 1.f, 0.f));
-	modelViewMatrix = transform * modelViewMatrix;
+	meshSkin->bind();
+	meshSkin->uniformMat4x4("mvm", &modelViewMatrix);
+	meshSkin->uniformMat4x4("prm", &projectionMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	objects[2]->draw(meshSkin);
+	meshSkin->unbind();
 
 	shader->bind();
-
-	// Draw our scene
 	shader->uniformMat4x4("mvm", &modelViewMatrix);
 	shader->uniformMat4x4("prm", &projectionMatrix);
-	shader->uniformVector("lightPosition", &lightPosition);
-
-	drawObjects();
-
+	glBindTexture(GL_TEXTURE_2D, 0);
+	objects[1]->draw(shader);
+	objects[0]->draw(shader);
 	shader->unbind();
 
 	// Draw the debug (if on)
@@ -193,7 +213,7 @@ void DisplayCallbackFunction(void)
 		debugger->SetMatrices(modelViewMatrix, projectionMatrix);
 		dynamicsWorld->debugDrawWorld();
 	}
-	
+
 
 	glutSwapBuffers();
 }
@@ -255,6 +275,8 @@ void TimerCallbackFunction(int value)
 
 	float deltaTasSeconds = float(deltaT) / 1000.0f;
 
+	objects[2]->update(deltaTasSeconds);
+
 	// Bullet step through world simulation
 	dynamicsWorld->stepSimulation(deltaTasSeconds, 10);
 
@@ -265,6 +287,8 @@ void TimerCallbackFunction(int value)
 
 	//// force draw call next tick
 	glutPostRedisplay();
+
+
 
 	//// delay timestep to maintain framerate
 	glutTimerFunc(FRAME_DELAY, TimerCallbackFunction, 0);
@@ -292,9 +316,18 @@ void WindowReshapeCallbackFunction(int w, int h)
 void MouseClickCallbackFunction(int button, int state, int x, int y)
 {
 	// Handle mouse clicks
+	// Handle mouse clicks
+	cameraLock = true;
 	if (state == GLUT_DOWN)
 	{
-		std::cout << "Mouse X: " << x << " Y: " << y << std::endl;
+		if (button == 0)
+		{
+			cameraLock = false;
+		}
+		else
+		{
+			cameraLock = true;
+		}
 	}
 }
 
@@ -305,8 +338,8 @@ void MouseClickCallbackFunction(int button, int state, int x, int y)
 */
 void MouseMotionCallbackFunction(int x, int y)
 {
-	float changeX = x - mousepositionX;
-	float changeY = y - mousepositionY;
+	lastMousepositionX = mousepositionX;
+	lastMousepositionY = mousepositionY;
 	mousepositionX = x;
 	mousepositionY = y;
 }
@@ -317,6 +350,9 @@ void MouseMotionCallbackFunction(int x, int y)
 */
 void MousePassiveMotionCallbackFunction(int x, int y)
 {
+
+	lastMousepositionX = mousepositionX;
+	lastMousepositionY = mousepositionY;
 	mousepositionX = x;
 	mousepositionY = y;
 }
@@ -329,6 +365,7 @@ void MousePassiveMotionCallbackFunction(int x, int y)
 void CloseCallbackFunction()
 {
 	delete shader; shader = nullptr;
+	delete meshSkin; meshSkin = nullptr;
 	KEYBOARD_INPUT->Destroy();
 
 	// Destroy game objects
@@ -456,21 +493,36 @@ int main(int argc, char **argv)
 	/* Initialize Shader */
 	shader = new Shader("shaders//blinnphong_v.glsl", "shaders//blinnphong_f.glsl");
 	shader->bind();
+
+	meshSkin = new Shader("shaders//skinning.vert", "shaders//shader_texture.frag");
+
+
 	glEnableVertexAttribArray(4);	glBindAttribLocation(shader->getID(), 4, "vPos");
 	glEnableVertexAttribArray(5);	glBindAttribLocation(shader->getID(), 5, "texture");
 	glEnableVertexAttribArray(6);	glBindAttribLocation(shader->getID(), 6, "normal");
 	glEnableVertexAttribArray(7);	glBindAttribLocation(shader->getID(), 7, "color");
 
+	shader->unbind();
+	meshSkin->bind();
+	glBindAttribLocation(meshSkin->getID(), 4, "inPosition");
+	glBindAttribLocation(meshSkin->getID(), 5, "vertexUV");
+	glBindAttribLocation(meshSkin->getID(), 6, "normal");
+	glBindAttribLocation(meshSkin->getID(), 8, "bones");
+	glBindAttribLocation(meshSkin->getID(), 9, "weights");
+	meshSkin->unbind();
+
 	// Initialize Bullet physics
 	initBullet();
-	
+
 	// Load Textures
 	Texture* ballTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
 	Texture* groundTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
+	Texture* robot = new Texture("img//bombot.png", "img//bombot.png", 10.0f);
 
 	textures.push_back(ballTex);
 	textures.push_back(groundTex);
-	
+	textures.push_back(robot);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Load objects
@@ -480,4 +532,87 @@ int main(int argc, char **argv)
 	glutMainLoop();
 
 	return 0;
+}
+
+
+
+//camera variables
+glm::vec3 up;
+glm::mat4 ViewMatrix;
+glm::mat4 ProjectionMatrix;
+//camera defaults
+glm::vec3 direction;
+glm::vec3 position = glm::vec3(-8.5f, -1.0f, 12.0f);
+glm::vec3 gameDefaultPos = glm::vec3(0.0f);
+glm::vec3 menuDefaultPos = glm::vec3(0.0f);
+glm::vec2 gameDefaultAngle(0.0f);
+glm::vec2 menuDefaultAngle(0.0f);
+glm::vec2 currentAngles = glm::vec2(2.5f, 0.01f);
+float mouseSpeed = 0.005f;
+float speed = 0.07f;
+float initialFoV = 45.0f;
+
+glm::mat4 getViewMatrix() {
+	return ViewMatrix;
+}
+glm::mat4 getProjectionMatrix() {
+	return ProjectionMatrix;
+}
+
+bool debug = false;
+
+
+
+void makeMatricies()
+{
+	if (cameraLock == false)
+	{
+		float tempX = float(lastMousepositionX - mousepositionX);
+		float tempY = float(lastMousepositionY - mousepositionY);
+		currentAngles.x += mouseSpeed * tempX;
+		currentAngles.y += mouseSpeed * tempY;
+	}
+
+	direction = glm::vec3(
+		cos(currentAngles.y) * sin(currentAngles.x),
+		sin(currentAngles.y),
+		cos(currentAngles.y) * cos(currentAngles.x)
+	);
+	glm::vec3 right = glm::vec3(
+		sin(currentAngles.x - 3.14f / 2.0f),
+		0,
+		cos(currentAngles.x - 3.14f / 2.0f)
+	);
+	up = glm::cross(right, direction);
+
+	if (keyDown['w'] == true)
+	{
+		position += direction *  speed;
+	}
+	// Move backward
+	if (keyDown['s'] == true)
+	{
+		position -= direction *  speed;
+	}
+	// Strafe right
+	if (keyDown['d'] == true)
+	{
+		position += right *  speed;
+	}
+	// Strafe left
+	if (keyDown['a'] == true)
+	{
+		position -= right * speed;
+	}
+
+
+	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	ProjectionMatrix = glm::perspective(initialFoV, (float)windowWidth / windowHeight, 0.1f, 10000.0f);
+	// Camera matrix
+	ViewMatrix = glm::lookAt(
+		position,           // Camera is here
+		position + direction, // and looks here : at the same position, plus "direction"
+		up                  // Head is up (set to 0,-1,0 to look upside-down)
+	);
+
 }

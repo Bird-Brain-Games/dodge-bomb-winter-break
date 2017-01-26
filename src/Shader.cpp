@@ -4,28 +4,28 @@
 // Forward definition of a utility function
 static char* readTextFromFile(const char *fileName);
 
-Shader::Shader(const char *vsFile, const char *fsFile){
-	init (vsFile, fsFile);
+Shader::Shader(const char *vsFile, const char *fsFile) {
+	init(vsFile, fsFile);
 }
 
-Shader::~Shader(void){
-	 glDetachShader(programID, vertShader);
-     glDetachShader(programID, fragShader);
-     
-     glDeleteShader(vertShader);
-     glDeleteShader(fragShader);
-     glDeleteProgram(programID);
+Shader::~Shader(void) {
+	glDetachShader(programID, vertShader);
+	glDetachShader(programID, fragShader);
+
+	glDeleteShader(vertShader);
+	glDeleteShader(fragShader);
+	glDeleteProgram(programID);
 }
 
-void Shader::init(const char *vsFile, const char *fsFile){
-	
+void Shader::init(const char *vsFile, const char *fsFile) {
+
 	GLint result = 0;
 	GLchar error[1024] = { 0 };
 
 	vertShader = glCreateShader(GL_VERTEX_SHADER);
 	const char *vsText = readTextFromFile(vsFile);
 	glShaderSource(vertShader, 1, &vsText, 0);
-	glCompileShader(vertShader);	
+	glCompileShader(vertShader);
 	glGetShaderiv(vertShader, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE)
 	{
@@ -45,7 +45,7 @@ void Shader::init(const char *vsFile, const char *fsFile){
 		std::cerr << "Error Compiling Shader: " << error << std::endl;
 	}
 	else printf("Compiled!\n");
-	
+
 	programID = glCreateProgram();
 
 	// attaching the vertex and fragment shaders to the program id
@@ -54,22 +54,38 @@ void Shader::init(const char *vsFile, const char *fsFile){
 
 	// linking the programs
 	glLinkProgram(programID);
+
+	int linkStatus;
+	glGetProgramiv(programID, GL_LINK_STATUS, &linkStatus);
+
+	if (linkStatus)
+	{
+		std::cout << "Shader linked successfully" << std::endl;
+		return;
+	}
+
+	int logLength;
+	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &logLength);
+	std::string log(logLength, ' ');
+	glGetProgramInfoLog(programID, logLength, &logLength, &log[0]);
+	std::cout << "Shader program failed to link: handle not set" << std::endl;
+
 }
 
-void Shader::bind(){
+void Shader::bind() {
 	glUseProgram(programID);
 }
 
-void Shader::unbind(){
+void Shader::unbind() {
 	glUseProgram(0);
 }
 
-unsigned int Shader::getID(){
+unsigned int Shader::getID() {
 	return programID;
 }
 
 static char* readTextFromFile(const char *fileName) {
-	
+
 	std::cout << "\t" << fileName << "... \t";
 
 	static char* text;
@@ -89,7 +105,7 @@ static char* readTextFromFile(const char *fileName) {
 			}
 			fclose(file);
 		}
-		 else {
+		else {
 			printf("ERROR: Could not find file. %s", fileName);
 		}
 	}
@@ -97,35 +113,41 @@ static char* readTextFromFile(const char *fileName) {
 	return text;
 }
 
-void Shader::uniformVector(const char* varName, float *data){
+void Shader::uniformVector(const char* varName, float *data) {
 	GLint loc = glGetUniformLocation(programID, varName);
-	glUniform3fv(loc,1,data);
+	glUniform3fv(loc, 1, data);
 }
 
-void Shader::uniformVector(const char* varName, float x, float y, float z){
-	float temp[3] = {x, y, z};
+void Shader::uniformVector(const char* varName, float x, float y, float z) {
+	float temp[3] = { x, y, z };
 	GLint loc = glGetUniformLocation(programID, varName);
-	glUniform3fv(loc,1,temp);
+	glUniform3fv(loc, 1, temp);
 }
 
-void Shader::uniformVector(const char* varName, glm::vec3* v){
+void Shader::uniformVector(const char* varName, glm::vec3* v) {
 	float temp[3] = { v->x, v->y, v->z };
 	GLint loc = glGetUniformLocation(programID, varName);
 	glUniform3fv(loc, 1, temp);
 }
 
-void Shader::uniformFloat(const char* varName, float data){
+void Shader::uniformFloat(const char* varName, float data) {
 	GLint loc = glGetUniformLocation(programID, varName);
-	glUniform1f(loc,data);
+	glUniform1f(loc, data);
 }
 
-void Shader::uniformMat4x4(const char* matName, glm::mat4x4* m){
+void Shader::uniformInt(const char* varName, int data) {
+	GLint loc = glGetUniformLocation(programID, varName);
+	glUniform1i(loc, data);
+}
+
+void Shader::uniformMat4x4(const char* matName, glm::mat4x4* m, unsigned int size) {
 	GLint loc = glGetUniformLocation(programID, matName);
-	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(*m));
+	glUniformMatrix4fv(loc, size, GL_FALSE, glm::value_ptr(*m));
 }
 
-void Shader::uniformTex(const char* varName, GLuint data, unsigned short activeTexture){
-	
+
+void Shader::uniformTex(const char* varName, GLuint data, unsigned short activeTexture) {
+
 	switch (activeTexture)
 	{
 	case 0:
