@@ -16,12 +16,13 @@
 #include "Shader.h"
 #include <iostream>
 #include <btBulletDynamicsCommon.h>
-
+#include "ANILoader.h"
 class GameObject
 {
 public:
 	GameObject(LoadObject* _model, btRigidBody* _body);
 	GameObject(LoadObject* _model, btRigidBody* _body, Texture* _tex);
+	GameObject(Holder* _hierarchy, btRigidBody* _body, Texture* _tex);
 	~GameObject();
 
 	virtual void draw(Shader *s);
@@ -35,6 +36,8 @@ private:
 
 	// loaded obj file
 	LoadObject* model;
+	//holds the VBO and hierarchy data.
+	Holder* hierarchy;
 
 	// Texture
 	Texture* tex;
