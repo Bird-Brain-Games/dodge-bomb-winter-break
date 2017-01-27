@@ -11,17 +11,39 @@
 // -- collision bounds (radius, xMins and xMaxs for cube)
 #pragma once
 
+#include <string>
 #include <GLM\glm.hpp>
 #include "loadObject.h"
 #include "Shader.h"
 #include <iostream>
 #include <btBulletDynamicsCommon.h>
 
+// Contains the information necessary to create a game object
+// Used to generate gameObjects using allocated resources in a level
+struct GameObjectConstructionInfo
+{
+	LoadObject *model;
+	btRigidBody::btRigidBodyConstructionInfo *rigidBodyCI;
+	Texture *tex;
+	std::string tag;
+
+	GameObjectConstructionInfo::GameObjectConstructionInfo()
+	{
+		model = nullptr;
+		rigidBodyCI = nullptr;
+		tex = nullptr;
+		tag = "";
+	}
+
+	bool init(std::string fileName);
+};
+
 class GameObject
 {
 public:
 	GameObject(LoadObject* _model, btRigidBody* _body);
-	GameObject(LoadObject* _model, btRigidBody* _body, Texture* _tex);
+	GameObject(LoadObject* _model, btRigidBody* _body, Texture* _tex, std::string _tag = "Undefined");
+	GameObject(GameObjectConstructionInfo, std::string name);
 	~GameObject();
 
 	virtual void draw(Shader *s);
@@ -39,4 +61,9 @@ private:
 	// Texture
 	Texture* tex;
 
+	// Identifier Tag
+	std::string const tag;
+
+	// Unique name
+	std::string name;
 };

@@ -1,0 +1,17 @@
+--- GameObject data ---
+gameObjectName:BlakeBox
+
+--- model components ---
+objName:5x5box.obj
+diffuseTexName:Blake.png
+specularTexName:Blake.png
+
+--- Bounding box components ---
+collisionShape:Box
+collisionDimensions:2.5,0.5,2.5
+
+--- Rigidbody components ---
+bodyType:Static
+mass:0
+friction:1
+restitution:0.5
