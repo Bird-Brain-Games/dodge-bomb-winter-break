@@ -52,7 +52,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include\;$(SolutionDir)\bullet\bullet3-2.85.1\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include\;$(SolutionDir)\bullet\bullet3-2.85.1\src;$(SolutionDir)\bullet\bullet3-2.85.1\Extras\Serialize</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -68,7 +68,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include\;$(SolutionDir)\bullet\bullet3-2.85.1\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include\;$(SolutionDir)\bullet\bullet3-2.85.1\src;$(SolutionDir)\bullet\bullet3-2.85.1\Extras\Serialize</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -86,6 +86,7 @@
     <ClCompile Include="src\loadObject.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\BulletDebug.h" />
@@ -94,6 +95,7 @@
     <ClInclude Include="src\KeyframeController.h" />
     <ClInclude Include="src\loadObject.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\World.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\blinnphong_f.glsl" />
@@ -102,6 +104,12 @@
     <None Include="shaders\passThru_v.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="bullet\Extras\Serialize\BulletFileLoader\BulletFileLoader.vcxproj">
+      <Project>{b71fca19-71ca-3fca-a6ac-4c19ed4dfdbd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="bullet\Extras\Serialize\BulletWorldImporter\BulletWorldImporter.vcxproj">
+      <Project>{c9261f71-71de-3581-b366-dce37aa799a0}</Project>
+    </ProjectReference>
     <ProjectReference Include="bullet\src\BulletCollision\BulletCollision.vcxproj">
       <Project>{af07f4b6-c15d-363f-8a2f-d152ba863646}</Project>
     </ProjectReference>

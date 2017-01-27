@@ -18,11 +18,15 @@ void BulletDebugger::SetMatrices(glm::mat4 pViewMatrix, glm::mat4 pProjectionMat
 
 void BulletDebugger::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
+	glDisable(GL_DEPTH_TEST);
+	//glPolygonOffset(1, 1);
 	glColor3f(color.x(), color.y(), color.z());
 	glBegin(GL_LINES);
 		glVertex3f(from.x(), from.y(), from.z());
 		glVertex3f(to.x(), to.y(), to.z());
 	glEnd();
+	glEnable(GL_DEPTH_TEST);
+	//glPolygonOffset(0, 1);
 }
 
 void BulletDebugger::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)

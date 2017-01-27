@@ -17,6 +17,7 @@
 #include <IL\ilut.h>
 
 #include <btBulletDynamicsCommon.h>
+//#include <BulletWorldImporter\btBulletWorldImporter.h>
 
 // user headers
 #include "loadObject.h"
@@ -45,6 +46,8 @@ btDefaultCollisionConfiguration* collisionConfiguration;
 btCollisionDispatcher* dispatcher;
 btSequentialImpulseConstraintSolver* solver;
 btDiscreteDynamicsWorld* dynamicsWorld;
+
+//btBulletWorldImporter* fileLoader;
 
 // Bullet debug
 BulletDebugger *debugger;
@@ -100,8 +103,16 @@ void initObjects()
 	ballShape->calculateLocalInertia(mass, ballInertia);
 
 	btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI(mass, ballMotionState, ballShape, ballInertia);
+
+	// add bounciness to the ball
+	ballRigidBodyCI.m_restitution = 0.5f;
+
 	btRigidBody* ballRigidBody = new btRigidBody(ballRigidBodyCI);	// Can use construction info for multiple objects
 	dynamicsWorld->addRigidBody(ballRigidBody);
+
+	btRigidBody* ballRigidBody2 = new btRigidBody(ballRigidBodyCI);
+	ballRigidBody2->setMotionState(new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 20, 0))));
+	dynamicsWorld->addRigidBody(ballRigidBody2);
 
 	// Determine the ground information
 	// quaternion - rotation, vec3 - position
@@ -111,6 +122,10 @@ void initObjects()
 	
 	btRigidBody::btRigidBodyConstructionInfo
 		groundRigidBodyCI(mass, groundMotionState, groundShape, btVector3(0, 0, 0));
+
+	// add bounciness to the ball
+	groundRigidBodyCI.m_restitution = 0.2f;
+
 	btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
 	dynamicsWorld->addRigidBody(groundRigidBody);
 
@@ -126,11 +141,43 @@ void initObjects()
 
 	// Create the game objects
 	GameObject* ball = new GameObject(ballModel, ballRigidBody, textures[0]);
+	GameObject* ball2 = new GameObject(ballModel, ballRigidBody2, textures[0]);
 	GameObject* ground = new GameObject(groundModel, groundRigidBody, textures[1]);
 
 	objects.push_back(ball);
+	objects.push_back(ball2);
 	objects.push_back(ground);
 }
+
+//void initWorld()
+//{
+//	fileLoader = new btBulletWorldImporter(dynamicsWorld);
+//	fileLoader->setVerboseMode(true);
+//	if (fileLoader->loadFile("obj//bullet_test.bullet"))
+//	{
+//		int numRigidBodies = fileLoader->getNumRigidBodies();
+//		for (unsigned i = 0; i < numRigidBodies; i++)
+//		{
+//			btRigidBody* tempObject = btRigidBody::upcast(fileLoader->getRigidBodyByIndex(i));
+//
+//			std::cout << fileLoader->getNameForPointer(tempObject) << std::endl;
+//			std::cout << "Friction: " << tempObject->getFriction() << std::endl;
+//			std::cout << "Restitution: " << tempObject->getRestitution() << std::endl;
+//			std::cout << "mass " << tempObject->getInvMass();
+//			std::cout << std::endl;
+//			//fileLoader->
+//		}
+//		
+//		//std::cout << "Collision Objects: " << dynamicsWorld->getNumCollisionObjects() << std::endl;
+//		//std::cout << "" << dynamicsWorld->g
+//	}
+//	else
+//	{
+//		std::cerr << "Error: File not found" << std::endl;
+//		system("pause");
+//		glutLeaveMainLoop();
+//	}
+//}
 
 bool initBullet()
 {
@@ -144,7 +191,7 @@ bool initBullet()
 	// The actual physics solver
 	solver = new btSequentialImpulseConstraintSolver;
 
-	// The world.
+	// The world
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
@@ -258,6 +305,8 @@ void TimerCallbackFunction(int value)
 	// Bullet step through world simulation
 	dynamicsWorld->stepSimulation(deltaTasSeconds, 10);
 
+	//std::cout << objects[0]->getRigidBody()->getWorldTransform().
+
 	/*for (unsigned int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->update(deltaTasSeconds);
@@ -362,6 +411,7 @@ void CloseCallbackFunction()
 
 	// Destroy debugger
 	delete debugger; debugger = nullptr;
+	//delete fileLoader; fileLoader = nullptr;
 
 	// Destroy Bullet core variables
 	delete dynamicsWorld;	dynamicsWorld = nullptr;
@@ -475,6 +525,7 @@ int main(int argc, char **argv)
 
 	// Load objects
 	initObjects();
+	//initWorld();
 
 	/* start the event handler */
 	glutMainLoop();
