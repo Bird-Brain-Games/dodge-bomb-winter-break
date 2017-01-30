@@ -8,6 +8,11 @@
 
 bool GameObjectConstructionInfo::init(std::string fileName)
 {
+	
+}
+
+bool rigidBodyCI::createRigidBodyCIFromFile(std::string fileName)
+{
 	std::ifstream file(fileName);
 	if (!file)
 	{
@@ -27,10 +32,10 @@ bool GameObjectConstructionInfo::init(std::string fileName)
 		pos = line.find(':');
 		if (pos != std::string::npos)
 		{
-			key = line.substr(0, pos-1);
+			key = line.substr(0, pos - 1);
 			line = line.substr(pos + 1);
 
-			if (key == "gameObjectTag")
+			if (key == "tag")
 			{
 				tag = line;
 			}

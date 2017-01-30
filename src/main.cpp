@@ -40,19 +40,6 @@ glm::vec3 lightPosition(0.0, 0.0, 10.0);
 glm::mat4x4 projectionMatrix;
 glm::mat4x4 modelViewMatrix;
 
-// Bullet core variables
-btBroadphaseInterface* broadphase;
-btDefaultCollisionConfiguration* collisionConfiguration;
-btCollisionDispatcher* dispatcher;
-btSequentialImpulseConstraintSolver* solver;
-btDiscreteDynamicsWorld* dynamicsWorld;
-
-//btBulletWorldImporter* fileLoader;
-
-// Bullet debug
-BulletDebugger *debugger;
-bool useDebug = false;
-
 // Defines and Core variables
 #define FRAMES_PER_SECOND 60
 const int FRAME_DELAY = 1000 / FRAMES_PER_SECOND; // Miliseconds per frame
@@ -147,58 +134,6 @@ void initObjects()
 	objects.push_back(ball);
 	objects.push_back(ball2);
 	objects.push_back(ground);
-}
-
-//void initWorld()
-//{
-//	fileLoader = new btBulletWorldImporter(dynamicsWorld);
-//	fileLoader->setVerboseMode(true);
-//	if (fileLoader->loadFile("obj//bullet_test.bullet"))
-//	{
-//		int numRigidBodies = fileLoader->getNumRigidBodies();
-//		for (unsigned i = 0; i < numRigidBodies; i++)
-//		{
-//			btRigidBody* tempObject = btRigidBody::upcast(fileLoader->getRigidBodyByIndex(i));
-//
-//			std::cout << fileLoader->getNameForPointer(tempObject) << std::endl;
-//			std::cout << "Friction: " << tempObject->getFriction() << std::endl;
-//			std::cout << "Restitution: " << tempObject->getRestitution() << std::endl;
-//			std::cout << "mass " << tempObject->getInvMass();
-//			std::cout << std::endl;
-//			//fileLoader->
-//		}
-//		
-//		//std::cout << "Collision Objects: " << dynamicsWorld->getNumCollisionObjects() << std::endl;
-//		//std::cout << "" << dynamicsWorld->g
-//	}
-//	else
-//	{
-//		std::cerr << "Error: File not found" << std::endl;
-//		system("pause");
-//		glutLeaveMainLoop();
-//	}
-//}
-
-bool initBullet()
-{
-	// Build the broadphase
-	broadphase = new btDbvtBroadphase();
-
-	// Set up the collision configuration and dispatcher
-	collisionConfiguration = new btDefaultCollisionConfiguration();
-	dispatcher = new btCollisionDispatcher(collisionConfiguration);
-
-	// The actual physics solver
-	solver = new btSequentialImpulseConstraintSolver;
-
-	// The world
-	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-	dynamicsWorld->setGravity(btVector3(0, -10, 0));
-
-	// The debugger
-	debugger = new BulletDebugger();
-	dynamicsWorld->setDebugDrawer(debugger);
-	return true;
 }
 
 /* function DisplayCallbackFunction(void)
@@ -409,16 +344,7 @@ void CloseCallbackFunction()
 		collisionShapes.at(i) = nullptr;
 	}
 
-	// Destroy debugger
-	delete debugger; debugger = nullptr;
-	//delete fileLoader; fileLoader = nullptr;
 
-	// Destroy Bullet core variables
-	delete dynamicsWorld;	dynamicsWorld = nullptr;
-	delete solver;	solver = nullptr;
-	delete collisionConfiguration;	collisionConfiguration = nullptr;
-	delete dispatcher;	dispatcher = nullptr;
-	delete broadphase;	broadphase = nullptr;
 }
 
 
