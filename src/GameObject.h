@@ -38,6 +38,9 @@ struct GameObjectConstructionInfo
 	bool init(std::string fileName);
 };
 
+
+
+
 class GameObject
 {
 public:
@@ -49,11 +52,14 @@ public:
 	virtual void draw(Shader *s);
 	virtual void update(float deltaT);
 
+
 	btRigidBody* getRigidBody() { return body; };
 
 private:
 	// Physics rigid body with Bullet
 	btRigidBody* body;
+
+	glm::mat4x4 worldTransform;
 
 	// loaded obj file
 	LoadObject* model;
