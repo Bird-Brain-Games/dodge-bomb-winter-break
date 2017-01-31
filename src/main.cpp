@@ -83,31 +83,31 @@ void initObjects()
 	rbRobot->load("obj\\bombot.btdata");
 	bodies.push_back(rbRobot);
 
-	RigidBody *box = new RigidBody();
+	/*RigidBody *box = new RigidBody();
 	box->load("obj\\box5x5.btdata");
-	bodies.push_back(box);
+	bodies.push_back(box);*/
 
 	LoadObject* groundModel = new LoadObject();
 	groundModel->loadFromObject("obj\\5x5box.obj");
 	models.push_back(groundModel);
 
-
+/*
 
 	ANILoader* ani = new ANILoader();
 	ani->loadHTR("assets\\htr\\finalBombot.htr");
 	ani->createNodes();
 
-	Holder* robotModel = new Holder(ani->getRootNode(), ani);
+	Holder* robotModel = new Holder(ani->getRootNode(), ani);*/
 
 	// Create the game objects
 	//GameObject* ball = new GameObject(ballModel, ballRigidBody, textures[0]);
 	//GameObject* ball2 = new GameObject(ballModel, ballRigidBody2, textures[0]);
-	GameObject* ground = new GameObject(groundModel, box, textures[1]);
-	GameObject* robot = new GameObject(robotModel, rbRobot, textures[2]);
+	GameObject* ground = new GameObject(groundModel, rbRobot, textures[1]);
+	//GameObject* robot = new GameObject(robotModel, rbRobot, textures[2]);
 	//objects.push_back(ball);
 	//objects.push_back(ball2);
 	objects.push_back(ground);
-	objects.push_back(robot);
+	//objects.push_back(robot);
 }
 
 /* function DisplayCallbackFunction(void)
@@ -134,7 +134,7 @@ void DisplayCallbackFunction(void)
 	meshSkin->uniformMat4x4("prm", &projectionMatrix);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	objects[1]->draw(meshSkin);
+	//objects[1]->draw(meshSkin);
 	meshSkin->unbind();
 
 	shader->bind();
@@ -142,7 +142,6 @@ void DisplayCallbackFunction(void)
 	shader->uniformMat4x4("prm", &projectionMatrix);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	objects[0]->draw(shader);
-	//objects[0]->draw(shader);
 	shader->unbind();
 
 	// Draw the debug (if on)
@@ -205,7 +204,7 @@ void TimerCallbackFunction(int value)
 
 	float deltaTasSeconds = float(deltaT) / 1000.0f;
 
-	objects[1]->update(deltaTasSeconds);
+	//objects[1]->update(deltaTasSeconds);
 
 	// Bullet step through world simulation
 	RigidBody::systemUpdate(deltaTasSeconds, 10);

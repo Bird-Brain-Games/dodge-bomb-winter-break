@@ -109,12 +109,6 @@
     <None Include="shaders\passThru_v.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="bullet\Extras\Serialize\BulletFileLoader\BulletFileLoader.vcxproj">
-      <Project>{b71fca19-71ca-3fca-a6ac-4c19ed4dfdbd}</Project>
-    </ProjectReference>
-    <ProjectReference Include="bullet\Extras\Serialize\BulletWorldImporter\BulletWorldImporter.vcxproj">
-      <Project>{c9261f71-71de-3581-b366-dce37aa799a0}</Project>
-    </ProjectReference>
     <ProjectReference Include="bullet\src\BulletCollision\BulletCollision.vcxproj">
       <Project>{af07f4b6-c15d-363f-8a2f-d152ba863646}</Project>
     </ProjectReference>
