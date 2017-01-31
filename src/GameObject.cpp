@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "GLM\gtc\type_ptr.hpp"
 #include "RigidBody.h"
 
 GameObject::GameObject(LoadObject* _model, RigidBody* _body)

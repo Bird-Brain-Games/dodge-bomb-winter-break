@@ -3,6 +3,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "GLM\gtc\type_ptr.hpp"
+
 PhysicsEngine RigidBody::Sys;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,7 +83,7 @@ btRigidBody::btRigidBodyConstructionInfo* PhysicsEngine::getRigidBodyCI(std::str
 	it = CIMap.find(fileName);
 	if (it != CIMap.end())
 	{
-		return (&it->second);
+		return &(it->second);
 	}
 	else
 	{
@@ -91,7 +93,7 @@ btRigidBody::btRigidBodyConstructionInfo* PhysicsEngine::getRigidBodyCI(std::str
 			return nullptr;
 		}
 
-		return &CIMap.find(fileName)->second;
+		return &CIMap.at(fileName);
 	}
 }
 
@@ -125,7 +127,7 @@ bool PhysicsEngine::createRigidBodyCI(std::string fileName)
 	}
 
 	// Rigidbody components
-	btCollisionShape* shape;
+	btCollisionShape* shape = nullptr;
 	int	bodyType;		// Static, dynamic, or kinematic
 	float friction;
 	float restitution;	// bounciness
@@ -145,7 +147,7 @@ bool PhysicsEngine::createRigidBodyCI(std::string fileName)
 		pos = line.find(':');
 		if (pos != std::string::npos)
 		{
-			key = line.substr(0, pos - 1);
+			key = line.substr(0, pos);
 			line = line.substr(pos + 1);
 		}
 
@@ -180,8 +182,10 @@ bool PhysicsEngine::createRigidBodyCI(std::string fileName)
 				shape = new btBoxShape((shapeExtents / 2.0f));
 				break;
 			case 2:
+				shape = nullptr;
 				break;
 			default:
+				shape = nullptr;
 				break;
 			}
 		}
@@ -206,15 +210,17 @@ bool PhysicsEngine::createRigidBodyCI(std::string fileName)
 
 	// construct the CI
 	// POSSIBLE MEMORY LEAK WITH CREATION OF MOTIONSTATE
-	btRigidBody::btRigidBodyConstructionInfo CI(mass, new btDefaultMotionState(), shape, inertia);
+	btRigidBody::btRigidBodyConstructionInfo CI(mass, nullptr, shape, inertia);
 	CI.m_restitution = restitution;
 	CI.m_friction = friction;
 
 	// Add the CI to the map
-	CIMap[tag] = CI;
+	CIMap.insert({ fileName, CI });
+	//CIMap[fileName] = btRigidBody::btRigidBodyConstructionInfo(CI);
 	collisionShapes.push_back(shape);
 
 	stream.close();
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -235,21 +241,22 @@ bool RigidBody::load(std::string fileName)
 {
 	if (!Sys.init()) return false;
 
-	btRigidBody::btRigidBodyConstructionInfo* rigidCI;
 	try
 	{
-		rigidCI = Sys.getRigidBodyCI(fileName);
+		btRigidBody::btRigidBodyConstructionInfo* rigidCI = Sys.getRigidBodyCI(fileName);
+		body = new btRigidBody(*rigidCI);
+		body->setMotionState(new btDefaultMotionState());
+		Sys.addRigidBody(body);
+		return true;
+
 	}
 	catch (char const* e)
 	{
 		std::cerr << e << std::endl;
 		return false;
 	}
-	
-	body = new btRigidBody(*rigidCI);
-	body->setMotionState(new btDefaultMotionState());
-	Sys.addRigidBody(body);
-	return true;
+
+
 }
 
 void RigidBody::systemUpdate(float deltaTasSeconds, int maxStep)
@@ -260,4 +267,14 @@ void RigidBody::systemUpdate(float deltaTasSeconds, int maxStep)
 void RigidBody::drawDebug(glm::mat4x4 const& modelViewMatrix, glm::mat4x4 const& projectionMatrix)
 {
 	Sys.drawDebug(modelViewMatrix, projectionMatrix);
+}
+
+glm::mat4x4 RigidBody::getWorldTransform()
+{
+	btTransform t;
+	btScalar m[16];
+	body->getMotionState()->getWorldTransform(t);
+	t.getOpenGLMatrix(m);
+
+	return glm::make_mat4x4((float*)m);
 }
