@@ -113,40 +113,44 @@ static char* readTextFromFile(const char *fileName) {
 	return text;
 }
 
-void Shader::uniformVector(const char* varName, float *data) {
-	GLint loc = glGetUniformLocation(programID, varName);
+void Shader::uniformVector(const std::string& varName, float *data) {
+	GLint loc = getUnifrom(varName);
 	glUniform3fv(loc, 1, data);
 }
 
-void Shader::uniformVector(const char* varName, float x, float y, float z) {
+void Shader::uniformVector(const std::string& varName, float x, float y, float z) {
 	float temp[3] = { x, y, z };
-	GLint loc = glGetUniformLocation(programID, varName);
+	GLint loc = getUnifrom(varName);
 	glUniform3fv(loc, 1, temp);
 }
 
-void Shader::uniformVector(const char* varName, glm::vec3* v) {
+void Shader::uniformVector(const std::string& varName, glm::vec3* v) {
 	float temp[3] = { v->x, v->y, v->z };
-	GLint loc = glGetUniformLocation(programID, varName);
+	GLint loc = getUnifrom(varName);
 	glUniform3fv(loc, 1, temp);
 }
 
-void Shader::uniformFloat(const char* varName, float data) {
-	GLint loc = glGetUniformLocation(programID, varName);
+void Shader::uniformFloat(const std::string& varName, float data) {
+	GLint loc = getUnifrom(varName);
 	glUniform1f(loc, data);
 }
 
-void Shader::uniformInt(const char* varName, int data) {
-	GLint loc = glGetUniformLocation(programID, varName);
+void Shader::uniformInt(const std::string& varName, int data) {
+	GLint loc = getUnifrom(varName);
 	glUniform1i(loc, data);
 }
 
-void Shader::uniformMat4x4(const char* matName, glm::mat4x4* m, unsigned int size) {
-	GLint loc = glGetUniformLocation(programID, matName);
+void Shader::uniformMat4x4(const std::string& matName, glm::mat4x4* m, unsigned int size) {
+	GLint loc = getUnifrom(matName);
 	glUniformMatrix4fv(loc, size, GL_FALSE, glm::value_ptr(*m));
 }
 
+int Shader::getUnifrom(const std::string& uniformName)
+{
+	return glGetUniformLocation(programID, uniformName.c_str());
+}
 
-void Shader::uniformTex(const char* varName, GLuint data, unsigned short activeTexture) {
+void Shader::uniformTex(const std::string& varName, GLuint data, unsigned short activeTexture) {
 
 	switch (activeTexture)
 	{
@@ -165,6 +169,6 @@ void Shader::uniformTex(const char* varName, GLuint data, unsigned short activeT
 	}
 
 	glBindTexture(GL_TEXTURE_2D, data);
-	GLuint loc = glGetUniformLocation(getID(), varName);
+	GLuint loc = getUnifrom(varName);
 	glUniform1i(loc, activeTexture);
 }

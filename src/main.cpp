@@ -102,7 +102,7 @@ void initObjects()
 	// Determine the ball information
 	// quaternion - rotation, vec3 - position
 	btDefaultMotionState* ballMotionState =
-		new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
+		new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 300, 0)));
 
 	btScalar mass = 1;
 	btVector3 ballInertia(0, 0, 0);
