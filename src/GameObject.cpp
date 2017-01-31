@@ -11,12 +11,22 @@ GameObject::GameObject(LoadObject* _model, RigidBody* _body)
 	model = _model;
 	body = _body;
 	tex = nullptr;
+	hierarchy = nullptr;
 }
 
 GameObject::GameObject(LoadObject* _model, RigidBody* _body, Texture* _tex, std::string _tag)
 	: tag(_tag)
 {
+	hierarchy = nullptr;
 	model = _model;
+	body = _body;
+	tex = _tex;
+}
+
+GameObject::GameObject(Holder* _hierarchy, btRigidBody* _body, Texture* _tex)
+{
+	model = nullptr;
+	hierarchy = _hierarchy;
 	body = _body;
 	tex = _tex;
 }
@@ -43,11 +53,20 @@ void GameObject::draw(Shader* s)
 
 	// Compute local transformation
 	s->uniformMat4x4("localTransform", &body->getWorldTransform());
-	
-	model->draw();
+	if (model == nullptr && hierarchy != nullptr)
+	{
+		hierarchy->draw(s);
+	}
+	else if (model != nullptr && hierarchy == nullptr)
+	{
+		model->draw();
+	}
 }
 
 void GameObject::update(float dt)
 {
-
+	if (hierarchy)
+	{
+		hierarchy->update(dt);
+	}
 }

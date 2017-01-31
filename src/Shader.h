@@ -8,7 +8,7 @@ class Shader
 public:
 	Shader(const char *, const char *);
 	~Shader(void);
-
+	
 	void init(const char *, const char *);
 
 	void bind();		// use the shader vert and frag
@@ -16,13 +16,15 @@ public:
 
 	unsigned int getID();
 
-	void uniformVector(const char*, float*);
-	void uniformVector(const char*, float, float, float);
-	void uniformVector(const char*, glm::vec3*);
-	void uniformFloat(const char*, float );
-	void uniformTex(const char*, GLuint , unsigned short);
-	void uniformMat4x4(const char*, glm::mat4x4*);
+	void uniformVector(const std::string&, float*);
+	void uniformVector(const std::string&, float, float, float);
+	void uniformVector(const std::string&, glm::vec3*);
+	void uniformFloat(const std::string&, float );
+	void uniformTex(const std::string&, GLuint , unsigned short);
+	void uniformMat4x4(const std::string&, glm::mat4x4*, unsigned int size = 1);
+	void Shader::uniformInt(const std::string& varName, int data);
 
+	int getUnifrom(const std::string&);
 	//------------------------------------------------------------------------
 	// Variables
 
