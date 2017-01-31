@@ -232,8 +232,8 @@ RigidBody::RigidBody()
 
 RigidBody::~RigidBody()
 {
-	delete body->getMotionState();
 	Sys.removeRigidBody(body);
+	delete body->getMotionState();
 	body = nullptr;
 }
 

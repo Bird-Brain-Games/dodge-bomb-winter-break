@@ -19,6 +19,7 @@ public:
 	bool init();
 	void update(float deltaTasSeconds, int maxStep);
 	void drawDebug(glm::mat4x4 const& modelViewMatrix, glm::mat4x4 const& projectionMatrix);
+	bool isDrawingDebug() { return useDebug; }
 
 	btRigidBody::btRigidBodyConstructionInfo* getRigidBodyCI(std::string fileName);
 	void addRigidBody(btRigidBody* rb);
@@ -63,6 +64,7 @@ public:
 	static void systemUpdate(float deltaTasSeconds, int maxStep);
 	static void drawDebug(glm::mat4x4 const& modelViewMatrix, glm::mat4x4 const& projectionMatrix);
 	static void setDebugDraw(bool isDrawing) { Sys.setDebugDraw(isDrawing); }
+	static bool isDrawingDebug() { return Sys.isDrawingDebug(); }
 protected:
 	static PhysicsEngine Sys;
 

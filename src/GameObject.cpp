@@ -23,7 +23,7 @@ GameObject::GameObject(LoadObject* _model, RigidBody* _body, Texture* _tex, std:
 	tex = _tex;
 }
 
-GameObject::GameObject(Holder* _hierarchy, btRigidBody* _body, Texture* _tex)
+GameObject::GameObject(Holder* _hierarchy, RigidBody* _body, Texture* _tex)
 {
 	model = nullptr;
 	hierarchy = _hierarchy;
