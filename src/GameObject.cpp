@@ -4,53 +4,9 @@
 #include <fstream>
 
 #include "GLM\gtc\type_ptr.hpp"
+#include "RigidBody.h"
 
-
-bool GameObjectConstructionInfo::init(std::string fileName)
-{
-	
-}
-
-bool rigidBodyCI::createRigidBodyCIFromFile(std::string fileName)
-{
-	std::ifstream file(fileName);
-	if (!file)
-	{
-		std::cerr << "Error: File " << fileName << std::endl;
-		return false;
-	}
-
-	std::string line;
-	std::string key;
-	std::size_t pos;
-
-	// Rigidbody info
-
-
-	while (getline(file, line))
-	{
-		pos = line.find(':');
-		if (pos != std::string::npos)
-		{
-			key = line.substr(0, pos - 1);
-			line = line.substr(pos + 1);
-
-			if (key == "tag")
-			{
-				tag = line;
-			}
-			else if (key == "inWorldMatrix")
-			{
-
-			}
-		}
-	}
-
-	file.close();
-	return true;
-}
-
-GameObject::GameObject(LoadObject* _model, btRigidBody* _body)
+GameObject::GameObject(LoadObject* _model, RigidBody* _body)
 	: tag("Undefined")
 {
 	model = _model;
@@ -58,7 +14,7 @@ GameObject::GameObject(LoadObject* _model, btRigidBody* _body)
 	tex = nullptr;
 }
 
-GameObject::GameObject(LoadObject* _model, btRigidBody* _body, Texture* _tex, std::string _tag)
+GameObject::GameObject(LoadObject* _model, RigidBody* _body, Texture* _tex, std::string _tag)
 	: tag(_tag)
 {
 	model = _model;
@@ -66,26 +22,10 @@ GameObject::GameObject(LoadObject* _model, btRigidBody* _body, Texture* _tex, st
 	tex = _tex;
 }
 
-GameObject::GameObject(GameObjectConstructionInfo CI)
-	: tag(CI.tag)
-{
-	model = CI.model;
-	tex = CI.tex;
-
-	// Create rigid body
-	if (CI.rigidBodyCI)
-	{
-
-	}
-	else
-		body = nullptr;
-}
-
 GameObject::~GameObject()
 {
 	if (body)
 	{
-		delete body->getMotionState();
 		delete body;
 	}
 	
@@ -103,12 +43,14 @@ void GameObject::draw(Shader* s)
 	}
 
 	// Compute local transformation
-	btTransform t;
+	s->uniformMat4x4("localTransform", &body->getWorldTransform());
+
+	/*btTransform t;
 	btScalar m[16];
 	body->getMotionState()->getWorldTransform(t);
 	t.getOpenGLMatrix(m);
 
-	s->uniformMat4x4("localTransform", &glm::make_mat4x4((float*)m));
+	s->uniformMat4x4("localTransform", &glm::make_mat4x4((float*)m));*/
 	
 	model->draw();
 }

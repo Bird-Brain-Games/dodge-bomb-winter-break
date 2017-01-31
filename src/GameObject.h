@@ -18,46 +18,25 @@
 #include <iostream>
 #include <btBulletDynamicsCommon.h>
 
-// Contains the information necessary to create a game object
-// Used to generate gameObjects using allocated resources in a level
-struct GameObjectConstructionInfo
-{
-	LoadObject *model;
-	btRigidBody::btRigidBodyConstructionInfo *rigidBodyCI;
-	Texture *tex;
-	std::string tag;
-
-	GameObjectConstructionInfo::GameObjectConstructionInfo()
-	{
-		model = nullptr;
-		rigidBodyCI = nullptr;
-		tex = nullptr;
-		tag = "";
-	}
-
-	bool init(std::string fileName);
-};
-
-
+class RigidBody;
 
 
 class GameObject
 {
 public:
-	GameObject(LoadObject* _model, btRigidBody* _body);
-	GameObject(LoadObject* _model, btRigidBody* _body, Texture* _tex, std::string _tag = "Undefined");
-	GameObject(GameObjectConstructionInfo, std::string name);
+	GameObject(LoadObject* _model, RigidBody* _body);
+	GameObject(LoadObject* _model, RigidBody* _body, Texture* _tex, std::string _tag = "Undefined");
 	~GameObject();
 
 	virtual void draw(Shader *s);
 	virtual void update(float deltaT);
 
 
-	btRigidBody* getRigidBody() { return body; };
+	RigidBody* getRigidBody() { return body; };
 
 private:
 	// Physics rigid body with Bullet
-	btRigidBody* body;
+	RigidBody* body;
 
 	glm::mat4x4 worldTransform;
 

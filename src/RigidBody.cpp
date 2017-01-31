@@ -1,5 +1,7 @@
 #include "RigidBody.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 PhysicsEngine RigidBody::Sys;
 
@@ -13,6 +15,20 @@ PhysicsEngine::PhysicsEngine()
 
 PhysicsEngine::~PhysicsEngine()
 {
+	// Destroy collision shapes
+	for (unsigned i = 0; i < collisionShapes.size(); i++)
+	{
+		delete collisionShapes.at(i);
+		collisionShapes.at(i) = nullptr;
+	}
+
+	// Destroy construction information
+	/*std::map<std::string, btRigidBody::btRigidBodyConstructionInfo*>::iterator it;
+	for (it = CIMap.begin(); it != CIMap.end(); it++)
+	{
+		delete it->second;
+	}*/
+
 	// Destroy debugger
 	delete debugger; debugger = nullptr;
 
@@ -61,7 +77,22 @@ void PhysicsEngine::drawDebug(glm::mat4x4 const& modelViewMatrix, glm::mat4x4 co
 
 btRigidBody::btRigidBodyConstructionInfo* PhysicsEngine::getRigidBodyCI(std::string fileName)
 {
+	std::map<std::string, btRigidBody::btRigidBodyConstructionInfo>::iterator it;
+	it = CIMap.find(fileName);
+	if (it != CIMap.end())
+	{
+		return (&it->second);
+	}
+	else
+	{
+		bool result = createRigidBodyCI(fileName);
+		if (!result)
+		{
+			return nullptr;
+		}
 
+		return &CIMap.find(fileName)->second;
+	}
 }
 
 void PhysicsEngine::addRigidBody(btRigidBody* rb)
@@ -84,6 +115,108 @@ void PhysicsEngine::setDebugDraw(bool isDrawing)
 		debugger->setDebugMode(0);
 }
 
+bool PhysicsEngine::createRigidBodyCI(std::string fileName)
+{
+	std::ifstream stream(fileName);
+	if (!stream)
+	{
+		std::cerr << "Error: file " << fileName << " does not exist." << std::endl;
+		return false;
+	}
+
+	// Rigidbody components
+	btCollisionShape* shape;
+	int	bodyType;		// Static, dynamic, or kinematic
+	float friction;
+	float restitution;	// bounciness
+	float mass;
+	std::string tag;
+	glm::mat4x4 inWorldMatrix;
+
+
+	// Parse through the file, gathering the necessary information
+	std::string line;
+	std::string key;
+	std::size_t pos;
+	
+	while (std::getline(stream, line))
+	{
+		key = "";
+		pos = line.find(':');
+		if (pos != std::string::npos)
+		{
+			key = line.substr(0, pos - 1);
+			line = line.substr(pos + 1);
+		}
+
+		if (key == "tag")
+		{
+			tag = line;
+		}
+		else if (key == "inWorldMatrix")
+		{
+			std::stringstream sstream(line);
+			for (unsigned int i = 0; i < 4; i++)
+			{
+				for (unsigned int j = 0; j < 4; j++)
+				{
+					sstream >> inWorldMatrix[i][j];
+				}
+			}
+		}
+		else if (key == "collisionShape")
+		{
+			int shapeType = std::stoi(line);
+			btVector3 shapeExtents;
+			switch (shapeType)
+			{
+			case 1:
+				// Box model
+				shapeExtents = btVector3(
+					(btScalar)inWorldMatrix[0][0],
+					(btScalar)inWorldMatrix[1][1],
+					(btScalar)inWorldMatrix[2][2]
+				);
+				shape = new btBoxShape((shapeExtents / 2.0f));
+				break;
+			case 2:
+				break;
+			default:
+				break;
+			}
+		}
+		else if (key == "bodyType")
+			bodyType = std::stoi(line);
+		else if (key == "friction")
+			friction = std::stof(line);
+		else if (key == "restitution")
+			restitution = std::stof(line);
+		else if (key == "mass")
+			mass = std::stof(line);
+	}
+
+	// Form the rigid body CI
+
+	// Calculate local inertia if dynamic
+	btVector3 inertia(0, 0, 0);
+	if (bodyType == 2)
+		shape->calculateLocalInertia(mass, inertia);
+	else
+		mass = 0.0f;
+
+	// construct the CI
+	// POSSIBLE MEMORY LEAK WITH CREATION OF MOTIONSTATE
+	btRigidBody::btRigidBodyConstructionInfo CI(mass, new btDefaultMotionState(), shape, inertia);
+	CI.m_restitution = restitution;
+	CI.m_friction = friction;
+
+	// Add the CI to the map
+	CIMap[tag] = CI;
+	collisionShapes.push_back(shape);
+
+	stream.close();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////	RigidBody
 RigidBody::RigidBody()
@@ -93,6 +226,7 @@ RigidBody::RigidBody()
 
 RigidBody::~RigidBody()
 {
+	delete body->getMotionState();
 	Sys.removeRigidBody(body);
 	body = nullptr;
 }

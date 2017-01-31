@@ -29,6 +29,9 @@ public:
 	btDiscreteDynamicsWorld* dynamicsWorld;
 
 private:
+	// Create the rigid body construction information
+	bool createRigidBodyCI(std::string fileName);
+private:
 	// Bullet core variables
 	btBroadphaseInterface* broadphase;
 	btDefaultCollisionConfiguration* collisionConfiguration;
@@ -54,6 +57,7 @@ public:
 	~RigidBody();
 
 	bool load(std::string fileName);
+	glm::mat4x4 getWorldTransform();
 
 public:
 	static void systemUpdate(float deltaTasSeconds, int maxStep);

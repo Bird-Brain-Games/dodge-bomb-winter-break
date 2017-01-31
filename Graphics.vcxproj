@@ -85,8 +85,8 @@
     <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\loadObject.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\RigidBody.cpp" />
     <ClCompile Include="src\Shader.cpp" />
-    <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\BulletDebug.h" />
@@ -94,8 +94,8 @@
     <ClInclude Include="src\InputManager.h" />
     <ClInclude Include="src\KeyframeController.h" />
     <ClInclude Include="src\loadObject.h" />
+    <ClInclude Include="src\RigidBody.h" />
     <ClInclude Include="src\Shader.h" />
-    <ClInclude Include="src\World.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\blinnphong_f.glsl" />
