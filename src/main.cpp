@@ -16,21 +16,18 @@
 #include <GLM\gtx\rotate_vector.hpp>
 #include <IL\ilut.h>
 
-#include <btBulletDynamicsCommon.h>
-//#include <BulletWorldImporter\btBulletWorldImporter.h>
-
 // user headers
 #include "loadObject.h"
 #include "InputManager.h"
 #include "GameObject.h"
 #include "Shader.h"
-#include "BulletDebug.h"
+#include "RigidBody.h"
 
 // create game object
 std::vector<GameObject*> objects;
-std::vector<btCollisionShape*> collisionShapes;
 std::vector<Texture*> textures;
 std::vector<LoadObject*> models;
+std::vector<RigidBody*> bodies;
 
 // Create Shader
 Shader *shader;
@@ -73,49 +70,9 @@ void drawObjects()
 
 void initObjects()
 {
-	// Shapes can be reused, to conserve memory
-	btCollisionShape* groundShape = new btBoxShape(btVector3(2.5, 0.5, 2.5));
-	btCollisionShape* ballShape = new btSphereShape(1);
-
-	collisionShapes.push_back(groundShape);
-	collisionShapes.push_back(ballShape);
-
-	// Determine the ball information
-	// quaternion - rotation, vec3 - position
-	btDefaultMotionState* ballMotionState =
-		new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
-	
-	btScalar mass = 1;
-	btVector3 ballInertia(0, 0, 0);
-	ballShape->calculateLocalInertia(mass, ballInertia);
-
-	btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI(mass, ballMotionState, ballShape, ballInertia);
-
-	// add bounciness to the ball
-	ballRigidBodyCI.m_restitution = 0.5f;
-
-	btRigidBody* ballRigidBody = new btRigidBody(ballRigidBodyCI);	// Can use construction info for multiple objects
-	dynamicsWorld->addRigidBody(ballRigidBody);
-
-	btRigidBody* ballRigidBody2 = new btRigidBody(ballRigidBodyCI);
-	ballRigidBody2->setMotionState(new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 20, 0))));
-	dynamicsWorld->addRigidBody(ballRigidBody2);
-
-	// Determine the ground information
-	// quaternion - rotation, vec3 - position
-	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
-	
-	mass = 0;	// no mass means immovable
-	
-	btRigidBody::btRigidBodyConstructionInfo
-		groundRigidBodyCI(mass, groundMotionState, groundShape, btVector3(0, 0, 0));
-
-	// add bounciness to the ball
-	groundRigidBodyCI.m_restitution = 0.2f;
-
-	btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
-	dynamicsWorld->addRigidBody(groundRigidBody);
-
+	RigidBody *box = new RigidBody();
+	box->load("obj\\test.btdata");
+	bodies.push_back(box);
 
 	// Load the .obj files
 	LoadObject* ballModel = new LoadObject();
@@ -127,12 +84,12 @@ void initObjects()
 	models.push_back(groundModel);
 
 	// Create the game objects
-	GameObject* ball = new GameObject(ballModel, ballRigidBody, textures[0]);
-	GameObject* ball2 = new GameObject(ballModel, ballRigidBody2, textures[0]);
-	GameObject* ground = new GameObject(groundModel, groundRigidBody, textures[1]);
+	//GameObject* ball = new GameObject(ballModel, ballRigidBody, textures[0]);
+	//GameObject* ball2 = new GameObject(ballModel, ballRigidBody2, textures[0]);
+	GameObject* ground = new GameObject(groundModel, box, textures[1]);
 
-	objects.push_back(ball);
-	objects.push_back(ball2);
+	//objects.push_back(ball);
+	//objects.push_back(ball2);
 	objects.push_back(ground);
 }
 
@@ -170,12 +127,7 @@ void DisplayCallbackFunction(void)
 	shader->unbind();
 
 	// Draw the debug (if on)
-	if (debugger->getDebugMode() != 0)
-	{
-		debugger->SetMatrices(modelViewMatrix, projectionMatrix);
-		dynamicsWorld->debugDrawWorld();
-	}
-	
+	RigidBody::drawDebug(modelViewMatrix, projectionMatrix);
 
 	glutSwapBuffers();
 }
@@ -219,11 +171,7 @@ void TimerCallbackFunction(int value)
 	//// process inputs
 	if (KEYBOARD_INPUT->CheckPressEvent('i') || KEYBOARD_INPUT->CheckPressEvent('I'))
 	{
-		useDebug = !useDebug;
-		if (useDebug)
-			debugger->setDebugMode(1);
-		else
-			debugger->setDebugMode(0);
+		RigidBody::setDebugDraw(true);
 	}
 	KEYBOARD_INPUT->WipeEventList();
 
@@ -238,7 +186,7 @@ void TimerCallbackFunction(int value)
 	float deltaTasSeconds = float(deltaT) / 1000.0f;
 
 	// Bullet step through world simulation
-	dynamicsWorld->stepSimulation(deltaTasSeconds, 10);
+	RigidBody::systemUpdate(deltaTasSeconds, 10);
 
 	//std::cout << objects[0]->getRigidBody()->getWorldTransform().
 
@@ -315,12 +263,11 @@ void CloseCallbackFunction()
 	delete shader; shader = nullptr;
 	KEYBOARD_INPUT->Destroy();
 
-	// Destroy game objects
-	for (unsigned i = 0; i < objects.size(); i++)
+	// Destroy rigid bodies
+	for (unsigned i = 0; i < bodies.size(); i++)
 	{
-		dynamicsWorld->removeRigidBody(objects.at(i)->getRigidBody());
-		delete objects.at(i);
-		objects.at(i) = nullptr;
+		delete bodies.at(i);
+		bodies.at(i) = nullptr;
 	}
 
 	// Destroy loaded models
@@ -336,15 +283,6 @@ void CloseCallbackFunction()
 		delete textures.at(i);
 		textures.at(i) = nullptr;
 	}
-
-	// Destroy collision shapes
-	for (unsigned i = 0; i < collisionShapes.size(); i++)
-	{
-		delete collisionShapes.at(i);
-		collisionShapes.at(i) = nullptr;
-	}
-
-
 }
 
 
@@ -436,9 +374,6 @@ int main(int argc, char **argv)
 	glEnableVertexAttribArray(5);	glBindAttribLocation(shader->getID(), 5, "texture");
 	glEnableVertexAttribArray(6);	glBindAttribLocation(shader->getID(), 6, "normal");
 	glEnableVertexAttribArray(7);	glBindAttribLocation(shader->getID(), 7, "color");
-
-	// Initialize Bullet physics
-	initBullet();
 	
 	// Load Textures
 	Texture* ballTex = new Texture("img//Blake.png", "img//Blake.png", 10.0f);
