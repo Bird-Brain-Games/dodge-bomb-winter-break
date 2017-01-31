@@ -182,6 +182,7 @@ bool PhysicsEngine::createRigidBodyCI(std::string fileName)
 				shape = new btBoxShape((shapeExtents / 2.0f));
 				break;
 			case 2:
+				// Sphere model
 				shape = nullptr;
 				break;
 			default:
@@ -216,7 +217,6 @@ bool PhysicsEngine::createRigidBodyCI(std::string fileName)
 
 	// Add the CI to the map
 	CIMap.insert({ fileName, CI });
-	//CIMap[fileName] = btRigidBody::btRigidBodyConstructionInfo(CI);
 	collisionShapes.push_back(shape);
 
 	stream.close();

@@ -188,13 +188,6 @@ void TimerCallbackFunction(int value)
 	// Bullet step through world simulation
 	RigidBody::systemUpdate(deltaTasSeconds, 10);
 
-	//std::cout << objects[0]->getRigidBody()->getWorldTransform().
-
-	/*for (unsigned int i = 0; i < objects.size(); i++)
-	{
-		objects[i]->update(deltaTasSeconds);
-	}*/
-
 	//// force draw call next tick
 	glutPostRedisplay();
 
