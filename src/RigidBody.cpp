@@ -63,6 +63,7 @@ bool PhysicsEngine::init()
 	// The debugger
 	debugger = new BulletDebugger();
 	dynamicsWorld->setDebugDrawer(debugger);
+	systemInit = true;
 	return true;
 }
 
@@ -277,4 +278,16 @@ glm::mat4x4 RigidBody::getWorldTransform()
 	t.getOpenGLMatrix(m);
 
 	return glm::make_mat4x4((float*)m);
+}
+
+void RigidBody::setWorldTransform(glm::vec3 pos, glm::vec4 quat)
+{
+	btTransform newTran(btQuaternion(quat.x, quat.y, quat.z, quat.w), btVector3(pos.x, pos.y, pos.z));
+	body->setWorldTransform(newTran);
+}
+
+void RigidBody::setWorldTransform(glm::vec3 pos)
+{
+	btTransform newTran = btTransform(body->getWorldTransform().getRotation(), btVector3(pos.x, pos.y, pos.z));
+	body->setWorldTransform(newTran);
 }
