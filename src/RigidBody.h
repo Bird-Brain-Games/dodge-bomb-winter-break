@@ -59,6 +59,8 @@ public:
 
 	bool load(std::string fileName);
 	glm::mat4x4 getWorldTransform();
+	void setWorldTransform(glm::vec3 pos);
+	void setWorldTransform(glm::vec3 pos, glm::vec4 quat);
 
 public:
 	static void systemUpdate(float deltaTasSeconds, int maxStep);

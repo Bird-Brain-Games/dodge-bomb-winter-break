@@ -28,7 +28,6 @@
 std::vector<GameObject*> objects;
 std::vector<Texture*> textures;
 std::vector<LoadObject*> models;
-std::vector<RigidBody*> bodies;
 
 // Create Shader
 Shader *shader;
@@ -79,35 +78,37 @@ void drawObjects()
 
 void initObjects()
 {
+	RigidBody *box = new RigidBody();
+	box->load("obj\\box5x5.btdata");
+
 	RigidBody *rbRobot = new RigidBody();
 	rbRobot->load("obj\\bombot.btdata");
-	bodies.push_back(rbRobot);
 
-	/*RigidBody *box = new RigidBody();
-	box->load("obj\\box5x5.btdata");
-	bodies.push_back(box);*/
+	
 
 	LoadObject* groundModel = new LoadObject();
 	groundModel->loadFromObject("obj\\5x5box.obj");
 	models.push_back(groundModel);
 
-/*
+
 
 	ANILoader* ani = new ANILoader();
 	ani->loadHTR("assets\\htr\\finalBombot.htr");
 	ani->createNodes();
 
-	Holder* robotModel = new Holder(ani->getRootNode(), ani);*/
+	Holder* robotModel = new Holder(ani->getRootNode(), ani);
 
 	// Create the game objects
 	//GameObject* ball = new GameObject(ballModel, ballRigidBody, textures[0]);
 	//GameObject* ball2 = new GameObject(ballModel, ballRigidBody2, textures[0]);
-	GameObject* ground = new GameObject(groundModel, rbRobot, textures[1]);
-	//GameObject* robot = new GameObject(robotModel, rbRobot, textures[2]);
+	GameObject* ground = new GameObject(groundModel, box, textures[1]);
+	GameObject* robot = new GameObject(robotModel, rbRobot, textures[2]);
+	
+	robot->getRigidBody()->setWorldTransform(glm::vec3(0.f, 80.f, 0.f));
 	//objects.push_back(ball);
 	//objects.push_back(ball2);
 	objects.push_back(ground);
-	//objects.push_back(robot);
+	objects.push_back(robot);
 }
 
 /* function DisplayCallbackFunction(void)
@@ -134,7 +135,7 @@ void DisplayCallbackFunction(void)
 	meshSkin->uniformMat4x4("prm", &projectionMatrix);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	//objects[1]->draw(meshSkin);
+	objects[1]->draw(meshSkin);
 	meshSkin->unbind();
 
 	shader->bind();
@@ -204,7 +205,7 @@ void TimerCallbackFunction(int value)
 
 	float deltaTasSeconds = float(deltaT) / 1000.0f;
 
-	//objects[1]->update(deltaTasSeconds);
+	objects[1]->update(deltaTasSeconds);
 
 	// Bullet step through world simulation
 	RigidBody::systemUpdate(deltaTasSeconds, 10);
@@ -291,13 +292,6 @@ void CloseCallbackFunction()
 	delete shader; shader = nullptr;
 	delete meshSkin; meshSkin = nullptr;
 	KEYBOARD_INPUT->Destroy();
-
-	// Destroy rigid bodies
-	for (unsigned i = 0; i < bodies.size(); i++)
-	{
-		delete bodies.at(i);
-		bodies.at(i) = nullptr;
-	}
 
 	// Destroy loaded models
 	for (unsigned i = 0; i < models.size(); i++)
