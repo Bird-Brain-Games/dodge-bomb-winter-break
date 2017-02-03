@@ -70,3 +70,8 @@ void GameObject::update(float dt)
 		hierarchy->update(dt);
 	}
 }
+
+void GameObject::setTransform(glm::vec3 pos, glm::vec4 orientation)
+{
+	getRigidBody()->setWorldTransform(pos, orientation);
+}

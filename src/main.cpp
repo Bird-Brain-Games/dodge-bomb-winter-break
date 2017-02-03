@@ -17,17 +17,16 @@
 #include <IL\ilut.h>
 
 // user headers
-#include "loadObject.h"
+#include "World.h"
 #include "InputManager.h"
 #include "GameObject.h"
 #include "Shader.h"
 #include "RigidBody.h"
-#include "ANILoader.h"
 
 // create game object
 std::vector<GameObject*> objects;
 std::vector<Texture*> textures;
-std::vector<LoadObject*> models;
+GameWorld *world;
 
 // Create Shader
 Shader *shader;
@@ -78,35 +77,29 @@ void drawObjects()
 
 void initObjects()
 {
+	// World class manages memory
+	world = new GameWorld();
+
 	RigidBody *box = new RigidBody();
 	box->load("obj\\box5x5.btdata");
 
 	RigidBody *rbRobot = new RigidBody();
 	rbRobot->load("obj\\bombot.btdata");
 
-	
+	// Load the box model
+	LoadObject* groundModel = world->getModel("obj\\5x5box.obj");
 
-	LoadObject* groundModel = new LoadObject();
-	groundModel->loadFromObject("obj\\5x5box.obj");
-	models.push_back(groundModel);
-
-
-
-	ANILoader* ani = new ANILoader();
-	ani->loadHTR("assets\\htr\\finalBombot.htr");
-	ani->createNodes();
-
+	// Load the player animation
+	ANILoader* ani = world->getAniModel("assets\\htr\\finalBombot.htr");
 	Holder* robotModel = new Holder(ani->getRootNode(), ani);
 
 	// Create the game objects
-	//GameObject* ball = new GameObject(ballModel, ballRigidBody, textures[0]);
-	//GameObject* ball2 = new GameObject(ballModel, ballRigidBody2, textures[0]);
 	GameObject* ground = new GameObject(groundModel, box, textures[1]);
 	GameObject* robot = new GameObject(robotModel, rbRobot, textures[2]);
 	
-	robot->getRigidBody()->setWorldTransform(glm::vec3(0.f, 80.f, 0.f));
-	//objects.push_back(ball);
-	//objects.push_back(ball2);
+	// set the 
+	robot->setTransform(glm::vec3(0.f, 80.f, 0.f), glm::vec4(180.f, 180.f, 180.f, 1.f));
+
 	objects.push_back(ground);
 	objects.push_back(robot);
 }
@@ -293,18 +286,21 @@ void CloseCallbackFunction()
 	delete meshSkin; meshSkin = nullptr;
 	KEYBOARD_INPUT->Destroy();
 
-	// Destroy loaded models
-	for (unsigned i = 0; i < models.size(); i++)
-	{
-		delete models.at(i);
-		models.at(i) = nullptr;
-	}
+	delete world;
+	world = nullptr;
 
 	// Destroy loaded textures
 	for (unsigned i = 0; i < textures.size(); i++)
 	{
 		delete textures.at(i);
 		textures.at(i) = nullptr;
+	}
+
+	// Destroy loaded objects
+	for (unsigned i = 0; i < objects.size(); i++)
+	{
+		delete objects.at(i);
+		objects.at(i) = nullptr;
 	}
 }
 
