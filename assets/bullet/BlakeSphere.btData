@@ -1,0 +1,18 @@
+--- GameObject data ---
+gameObjectName:BlakeSphere
+
+--- model components ---
+objName:sphere.obj
+diffuseTexName:Blake.png
+specularTexName:Blake.png
+
+--- Bounding box components ---
+inWorldMatrix:
+collisionShape:Sphere
+collisionDimensions:1
+
+--- Rigidbody components ---
+bodyType:Dynamic
+mass:1
+friction:1
+restitution:0.5

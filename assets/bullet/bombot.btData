@@ -1,0 +1,10 @@
+--- Bounding box components ---
+inWorldMatrix:10.127 0.0 0.0 0.0 0.0 10.611 0.0 0.0 0.0 0.0 4.827 0.0 0.0 0.0 0.0 1.0 
+collisionShape:1
+
+--- Rigidbody components ---
+bodyType:2
+friction:1.0
+restitution:0.5
+mass:1.0
+

@@ -1,0 +1,16 @@
+--- Level Components ---
+name:test
+
+--- Level gameObject data ---
+BlakeBox.btData
+BlakeSphere.btData
+
+--- Level gameObject locations ---
+BlakeBox
+0,0,0,1
+0,-0.5,0
+BlakeSphere
+0,0,0,1
+0,50,0
+
+---TODO: script to copy orientation and position to clipboard---
