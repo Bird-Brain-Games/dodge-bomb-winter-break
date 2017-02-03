@@ -32,6 +32,7 @@ public:
 	virtual void draw(Shader *s);
 	virtual void update(float deltaT);
 
+	void setTransform(glm::vec3 pos, glm::vec4 orientation);
 
 	RigidBody* getRigidBody() { return body; };
 

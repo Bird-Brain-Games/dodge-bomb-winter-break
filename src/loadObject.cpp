@@ -29,7 +29,7 @@ void LoadObject::draw()
 	glBindVertexArray(0);
 }
 
-bool LoadObject::loadFromObject(char* filename)
+bool LoadObject::loadFromObject(char const* filename)
 {
 	std::ifstream input(filename);
 	if (!input)
@@ -202,4 +202,9 @@ void Texture::bind(Shader* s)
 	s->uniformTex("diffuseTex", diffuseTex, 0);
 	s->uniformTex("specularTex", specularTex, 1);
 	s->uniformFloat("shininess", 25.0f);
+}
+
+void Texture::setShininess(float shine)
+{
+	shininess = shine;
 }

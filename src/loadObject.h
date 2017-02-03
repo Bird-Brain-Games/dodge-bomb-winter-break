@@ -26,7 +26,7 @@ struct Face
 class LoadObject
 {
 public:
-	bool loadFromObject(char* filename);
+	bool loadFromObject(char const* filename);
 	void draw();
 	~LoadObject();
 private:
@@ -56,6 +56,7 @@ public:
 
 	// sends the values to the shader
 	void bind(Shader* s);
+	void setShininess(float);
 
 private:
 	GLuint diffuseTex;
